@@ -44,4 +44,8 @@ public class VideoResource implements Resource{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
+	@Override
+	public String toString() {
+		return getName();
+	}
 }

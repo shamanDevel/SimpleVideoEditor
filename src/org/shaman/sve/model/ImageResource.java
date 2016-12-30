@@ -41,7 +41,10 @@ public class ImageResource implements Resource{
 	public void load(ResourceLoader loader) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
-	
-	
-	
+
+	@Override
+	public String toString() {
+		return getName();
+	}
+
 }

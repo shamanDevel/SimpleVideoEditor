@@ -8,6 +8,8 @@ package org.shaman.sve;
 import java.awt.BorderLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +45,7 @@ public class SimpleVideoEditor extends JFrame {
 
 	//project
 	private Project project;
+	private boolean changed;
 	
 	//UI
 	private JToolBar toolBar;
@@ -72,6 +75,7 @@ public class SimpleVideoEditor extends JFrame {
 				UndoableEdit edit = uee.getEdit();
 				undoManager.addEdit(edit);
 				refreshUndoRedoUI();
+				enableSave();
 			}
 		});
 		
@@ -94,6 +98,13 @@ public class SimpleVideoEditor extends JFrame {
 		getContentPane().add(sp, BorderLayout.CENTER);
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent we) {
+				Settings.flush();
+			}
+		});
 	}
 	private JToolBar createToolBar() {
 		toolBar = new JToolBar();
@@ -151,7 +162,7 @@ public class SimpleVideoEditor extends JFrame {
 	}
 	private JPanel createResourceView() {
 		resourcePanel = new ResourcePanel();
-		
+		resourcePanel.setUndoSupport(undoSupport);
 		return resourcePanel;
 	}
 	private JPanel createPropertyView() {
@@ -194,11 +205,12 @@ public class SimpleVideoEditor extends JFrame {
 			saveProjectAction.setEnabled(true);
 			exportProjectAction.setEnabled(true);
 			projectLoaded();
+			changed = true;
 		}
 	}
 	private void loadProject() {
 		LOG.info("load project");
-		JFileChooser fc = new JFileChooser("E:\\Sebastian\\Programmierung\\Java\\SimpleVideoEditorTests");
+		JFileChooser fc = new JFileChooser(Settings.getLastDirectory());
 		fc.setAcceptAllFileFilterUsed(false);
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fc.setFileFilter(new FileFilter() {
@@ -215,6 +227,7 @@ public class SimpleVideoEditor extends JFrame {
 		});
 		int ret = fc.showOpenDialog(this);
 		if (ret == JFileChooser.APPROVE_OPTION) {
+			Settings.setLastDirectory(fc.getCurrentDirectory());
 			closeProject();
 			Serializer serializer = new Persister();
 			File source = new File(fc.getSelectedFile(), PROJECT_FILE_NAME);
@@ -232,6 +245,7 @@ public class SimpleVideoEditor extends JFrame {
 	 */
 	private void projectLoaded() {
 		setTitle(project.getFolder().getAbsolutePath());
+		resourcePanel.setProject(project);
 	}
 	private void saveProject() {
 		LOG.info("save project");
@@ -243,6 +257,8 @@ public class SimpleVideoEditor extends JFrame {
 		try {
 			serializer.write(project, target);
 			LOG.info("project saved");
+			changed = false;
+			saveProjectAction.setEnabled(false);
 		} catch (Exception ex) {
 			LOG.log(Level.SEVERE, null, ex);
 		}
@@ -254,16 +270,22 @@ public class SimpleVideoEditor extends JFrame {
 	private void undo() {
 		undoManager.undo();
 		refreshUndoRedoUI();
+		enableSave();
 	}
 	private void redo() {
 		undoManager.redo();
 		refreshUndoRedoUI();
+		enableSave();
 	}
 	private void refreshUndoRedoUI() {
 		undoAction.setEnabled(undoManager.canUndo());
 		undoAction.putValue(Action.NAME, undoManager.getUndoPresentationName());
 		redoAction.setEnabled(undoManager.canRedo());
 		redoAction.putValue(Action.NAME, undoManager.getRedoPresentationName());
+	}
+	private void enableSave() {
+		changed = true;
+		saveProjectAction.setEnabled(true);
 	}
 
 	/**

@@ -234,11 +234,12 @@ public class NewProjectDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_closeDialog
 
     private void selectFolderAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectFolderAction
-        JFileChooser fc = new JFileChooser("E:\\Sebastian\\Programmierung\\Java\\SimpleVideoEditorTests");
+        JFileChooser fc = new JFileChooser(Settings.getLastDirectory());
 		fc.setDialogTitle("Select project folder");
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int ret = fc.showOpenDialog(this);
 		if (ret == JFileChooser.APPROVE_OPTION) {
+			Settings.setLastDirectory(fc.getCurrentDirectory());
 			File f = fc.getSelectedFile();
 			if (!f.isDirectory()) {
 				return;

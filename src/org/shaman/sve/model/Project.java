@@ -88,6 +88,9 @@ public class Project {
 	}
 
 	public void setResources(ArrayList<Resource> resources) {
+		if (resources == null) {
+			resources = new ArrayList<>();
+		}
 		this.resources = resources;
 	}
 

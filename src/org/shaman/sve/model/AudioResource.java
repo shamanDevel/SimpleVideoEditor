@@ -5,6 +5,7 @@
  */
 package org.shaman.sve.model;
 
+import java.io.File;
 import javax.sound.sampled.Clip;
 import org.simpleframework.xml.Element;
 
@@ -40,5 +41,10 @@ public class AudioResource implements Resource {
 	public void load(ResourceLoader loader) {
 		//TODO
 		
+	}
+	
+	@Override
+	public String toString() {
+		return new File(getName()).getName();
 	}
 }
