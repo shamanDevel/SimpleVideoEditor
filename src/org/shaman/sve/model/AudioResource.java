@@ -36,7 +36,8 @@ public class AudioResource implements Resource {
 		this.name = name;
 	}
 	
-	public void load() {
+	@Override
+	public void load(ResourceLoader loader) {
 		//TODO
 		
 	}

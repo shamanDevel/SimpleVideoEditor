@@ -38,7 +38,7 @@ public class ImageResource implements Resource{
 	}
 	
 	@Override
-	public void load() {
+	public void load(ResourceLoader loader) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	

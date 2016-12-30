@@ -5,6 +5,8 @@
  */
 package org.shaman.sve.model;
 
+import java.io.File;
+
 /**
  *
  * @author Sebastian Weiss
@@ -14,6 +16,10 @@ public interface Resource {
 	String getName();
 	void setName(String name);
 	
-	void load();
+	void load(ResourceLoader loader);
 	
+	public static interface ResourceLoader {
+		File getProjectDirectory();
+		void setMessage(String message);
+	}
 }

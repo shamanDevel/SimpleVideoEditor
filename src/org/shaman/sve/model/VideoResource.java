@@ -40,7 +40,7 @@ public class VideoResource implements Resource{
 	}
 
 	@Override
-	public void load() {
+	public void load(ResourceLoader loader) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
