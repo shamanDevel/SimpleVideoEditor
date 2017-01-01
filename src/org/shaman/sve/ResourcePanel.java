@@ -236,7 +236,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 				@Override
 				public void undo() throws CannotUndoException {
 					super.undo();
-					targetFile.delete();
+//					targetFile.delete();
 					project.getResources().remove(res);
 					listModel.removeElement(res);
 					LOG.info("undo: add audio");
@@ -245,12 +245,12 @@ public class ResourcePanel extends javax.swing.JPanel {
 				@Override
 				public void redo() throws CannotRedoException {
 					super.redo();
-					try {
-						FileUtils.copyFile(audioFile, targetFile); //copy agaim
-					} catch (IOException ex) {
-						LOG.log(Level.SEVERE, null, ex);
-						return;
-					}
+//					try {
+//						FileUtils.copyFile(audioFile, targetFile); //copy agaim
+//					} catch (IOException ex) {
+//						LOG.log(Level.SEVERE, null, ex);
+//						return;
+//					}
 					project.getResources().add(res);
 					listModel.addElement(res);
 					LOG.info("redo: add audio");

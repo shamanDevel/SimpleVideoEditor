@@ -5,12 +5,12 @@
  */
 package org.shaman.sve.model;
 
+import java.awt.Color;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
-import org.simpleframework.xml.Attribute;
-import org.simpleframework.xml.Element;
-import org.simpleframework.xml.ElementList;
-import org.simpleframework.xml.Root;
+import org.simpleframework.xml.*;
 
 /**
  *
@@ -18,6 +18,8 @@ import org.simpleframework.xml.Root;
  */
 @Root
 public class Project {
+	private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+	
 	@Attribute
 	private int version = 1;
 	
@@ -34,7 +36,39 @@ public class Project {
 	
 	@ElementList
 	private ArrayList<Resource> resources = new ArrayList<>();
+	
+	@ElementList
+	private ArrayList<TimelineObject> timelineObjects = new ArrayList<>();
+	
+	@Element
+	private Color backgroundColor = new Color(0, 0, 0);
+	public static final String PROP_BACKGROUNDCOLOR = "backgroundColor";
+	
+	//not persistent
+	private int time;
+	public static final String PROP_TIME = "time";
 
+	public Project() {
+	}
+
+	/**
+	 * Add PropertyChangeListener.
+	 *
+	 * @param listener
+	 */
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.addPropertyChangeListener(listener);
+	}
+
+	/**
+	 * Remove PropertyChangeListener.
+	 *
+	 * @param listener
+	 */
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		propertyChangeSupport.removePropertyChangeListener(listener);
+	}
+	
 	public int getVersion() {
 		return version;
 	}
@@ -93,6 +127,58 @@ public class Project {
 		}
 		this.resources = resources;
 	}
+
+	public ArrayList<TimelineObject> getTimelineObjects() {
+		return timelineObjects;
+	}
+
+	public void setTimelineObjects(ArrayList<TimelineObject> timelineObjects) {
+		if (timelineObjects == null) {
+			timelineObjects = new ArrayList<>();
+		}
+		this.timelineObjects = timelineObjects;
+	}
+	
+	/**
+	 * Get the value of backgroundColor
+	 *
+	 * @return the value of backgroundColor
+	 */
+	public Color getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	/**
+	 * Set the value of backgroundColor
+	 *
+	 * @param backgroundColor new value of backgroundColor
+	 */
+	public void setBackgroundColor(Color backgroundColor) {
+		Color oldBackgroundColor = this.backgroundColor;
+		this.backgroundColor = backgroundColor;
+		propertyChangeSupport.firePropertyChange(PROP_BACKGROUNDCOLOR, oldBackgroundColor, backgroundColor);
+	}
+
+	/**
+	 * Get the current playback time
+	 *
+	 * @return the value of time
+	 */
+	public int getTime() {
+		return time;
+	}
+
+	/**
+	 * Set the current playback time
+	 *
+	 * @param time new value of time
+	 */
+	public void setTime(int time) {
+		int oldTime = this.time;
+		this.time = time;
+		propertyChangeSupport.firePropertyChange(PROP_TIME, oldTime, time);
+	}
+
 
 	@Override
 	public String toString() {

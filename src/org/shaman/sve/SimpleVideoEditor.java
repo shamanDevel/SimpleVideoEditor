@@ -13,15 +13,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
@@ -177,7 +169,7 @@ public class SimpleVideoEditor extends JFrame {
 	}
 	private JPanel createTimelineView() {
 		timelinePanel = new TimelinePanel();
-		
+		timelinePanel.setUndoSupport(undoSupport);
 		return timelinePanel;
 	}
 	
@@ -208,6 +200,16 @@ public class SimpleVideoEditor extends JFrame {
 			changed = true;
 		}
 	}
+	private boolean isProjectDir(File dir, boolean dialog) {
+		File f = new File(dir, PROJECT_FILE_NAME);
+		if (f.exists()) {
+			return true;
+		}
+		if (dialog) {
+			JOptionPane.showMessageDialog(this, "The selected folder does not contain a project");
+		}
+		return false;
+	}
 	private void loadProject() {
 		LOG.info("load project");
 		JFileChooser fc = new JFileChooser(Settings.getLastDirectory());
@@ -216,8 +218,12 @@ public class SimpleVideoEditor extends JFrame {
 		fc.setFileFilter(new FileFilter() {
 			@Override
 			public boolean accept(File file) {
-				File f = new File(file, PROJECT_FILE_NAME);
-				return f.exists();
+				if (!file.isDirectory()) return false;
+				if (isProjectDir(file, false)) return true;
+				for (File fx : file.listFiles()) {
+					if (fx.isDirectory()) return true;
+				}
+				return false;
 			}
 
 			@Override
@@ -227,9 +233,12 @@ public class SimpleVideoEditor extends JFrame {
 		});
 		int ret = fc.showOpenDialog(this);
 		if (ret == JFileChooser.APPROVE_OPTION) {
+			if (!isProjectDir(fc.getSelectedFile(), true)) {
+				return;
+			}
 			Settings.setLastDirectory(fc.getCurrentDirectory());
 			closeProject();
-			Serializer serializer = new Persister();
+			Serializer serializer = SerializationUtils.createSerializer();
 			File source = new File(fc.getSelectedFile(), PROJECT_FILE_NAME);
 			try {
 				project = serializer.read(Project.class, source);
@@ -246,10 +255,11 @@ public class SimpleVideoEditor extends JFrame {
 	private void projectLoaded() {
 		setTitle(project.getFolder().getAbsolutePath());
 		resourcePanel.setProject(project);
+		timelinePanel.setProject(project);
 	}
 	private void saveProject() {
 		LOG.info("save project");
-		Serializer serializer = new Persister();
+		Serializer serializer = SerializationUtils.createSerializer();
 		if (!project.getFolder().exists()) {
 			project.getFolder().mkdir();
 		}
