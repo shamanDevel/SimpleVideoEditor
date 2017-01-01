@@ -28,6 +28,10 @@ public class TimelineObject {
 	private Resource resource;
 	public static final String PROP_RESOURCE = "resource";
 	
+	@Element
+	private String name;
+	public static final String PROP_NAME = "name";
+	
 	@ElementMap
 	private HashMap<String, Object> properties = new HashMap<>();
 	/**
@@ -59,6 +63,7 @@ public class TimelineObject {
 		Resource oldResource = this.resource;
 		this.resource = resource;
 		propertyChangeSupport.firePropertyChange(PROP_RESOURCE, oldResource, resource);
+		setName(resource.getName());
 	}
 
 	public HashMap<String, Object> getProperties() {
@@ -104,9 +109,29 @@ public class TimelineObject {
 		propertyChangeSupport.removePropertyChangeListener(listener);
 	}
 
+	/**
+	 * Get the value of name
+	 *
+	 * @return the value of name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Set the value of name
+	 *
+	 * @param name new value of name
+	 */
+	public void setName(String name) {
+		String oldName = this.name;
+		this.name = name;
+		propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, name);
+	}
+	
 	@Override
 	public String toString() {
-		return resource.toString();
+		return getName();
 	}
 
 }

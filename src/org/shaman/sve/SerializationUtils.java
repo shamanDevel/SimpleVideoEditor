@@ -50,6 +50,6 @@ public class SerializationUtils {
 	}
 	
 	public static Serializer createSerializer() {
-		return new Persister(new TreeStrategy(), MyMatcher.INSTANCE);
+		return new Persister(new CycleStrategy(), MyMatcher.INSTANCE);
 	}
 }

@@ -170,6 +170,7 @@ public class SimpleVideoEditor extends JFrame {
 	private JPanel createTimelineView() {
 		timelinePanel = new TimelinePanel();
 		timelinePanel.setUndoSupport(undoSupport);
+		timelinePanel.setResourcePanel(resourcePanel);
 		return timelinePanel;
 	}
 	

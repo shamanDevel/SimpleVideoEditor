@@ -64,6 +64,15 @@ public class ResourcePanel extends javax.swing.JPanel {
 	public void setUndoSupport(UndoableEditSupport undoSupport) {
 		this.undoSupport = undoSupport;
 	}
+	
+	public Resource getSelectedResource() {
+		int idx = resourceList.getSelectedIndex();
+		if (idx >= 0) {
+			return project.getResources().get(idx);
+		} else {
+			return null;
+		}
+	}
 
 	/**
 	 * This method is called from within the constructor to initialize the form.
