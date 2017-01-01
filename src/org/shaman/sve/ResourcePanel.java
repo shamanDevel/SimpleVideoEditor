@@ -5,6 +5,7 @@
  */
 package org.shaman.sve;
 
+import org.shaman.sve.player.Player;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,6 +38,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 	
 	private Project project;
 	private UndoableEditSupport undoSupport;
+	private Player player;
 	
 	private DefaultListModel<Resource> listModel;
 	
@@ -63,6 +65,10 @@ public class ResourcePanel extends javax.swing.JPanel {
 
 	public void setUndoSupport(UndoableEditSupport undoSupport) {
 		this.undoSupport = undoSupport;
+	}
+
+	public void setPlayer(Player player) {
+		this.player = player;
 	}
 	
 	public Resource getSelectedResource() {
@@ -238,6 +244,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 			//create resource
 			final AudioResource res = new AudioResource(RESOURCE_FOLDER + "/" + AUDIO_FOLDER + "/" + audioFile.getName());
 			project.getResources().add(res);
+			player.loadResource(res);
 			listModel.addElement(res);
 			LOG.info("audio file copied and resource added");
 			//add undo support

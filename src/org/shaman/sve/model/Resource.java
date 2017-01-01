@@ -6,6 +6,7 @@
 package org.shaman.sve.model;
 
 import java.io.File;
+import net.beadsproject.beads.core.AudioContext;
 
 /**
  *
@@ -17,9 +18,11 @@ public interface Resource {
 	void setName(String name);
 	
 	void load(ResourceLoader loader);
+	boolean isLoaded();
 	
 	public static interface ResourceLoader {
 		File getProjectDirectory();
 		void setMessage(String message);
+		AudioContext getAudioContext();
 	}
 }

@@ -9,7 +9,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import org.shaman.sve.Player;
+import org.shaman.sve.player.Player;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementMap;
 
@@ -44,6 +44,11 @@ public class TimelineObject {
 	 * Valid for images.
 	 */
 	public static final String PROP_DURATION = "duration";
+	
+	/**
+	 * Storage for the player
+	 */
+	public final HashMap<String, Object> playerProperties = new HashMap<>();
 
 	/**
 	 * Get the value of resource

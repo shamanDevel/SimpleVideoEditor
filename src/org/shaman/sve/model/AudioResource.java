@@ -6,7 +6,12 @@
 package org.shaman.sve.model;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.sampled.Clip;
+import net.beadsproject.beads.data.Sample;
+import net.beadsproject.beads.ugens.SamplePlayer;
 import org.simpleframework.xml.Element;
 
 /**
@@ -17,7 +22,7 @@ public class AudioResource implements Resource {
 	@Element
 	private String name;
 	
-	private Clip clip;
+	private Sample sample;
 
 	public AudioResource() {
 	}
@@ -25,7 +30,6 @@ public class AudioResource implements Resource {
 	public AudioResource(String name) {
 		this.name = name;
 	}
-	
 
 	@Override
 	public String getName() {
@@ -39,8 +43,27 @@ public class AudioResource implements Resource {
 	
 	@Override
 	public void load(ResourceLoader loader) {
-		//TODO
-		
+		if (isLoaded()) {
+			return;
+		}
+		try {
+			//load sample
+			loader.setMessage("load "+name);
+			sample = new Sample(loader.getProjectDirectory().getAbsolutePath()+"\\"+name);
+			loader.setMessage("loaded");
+		} catch (IOException ex) {
+			Logger.getLogger(AudioResource.class.getName()).log(Level.SEVERE, null, ex);
+			loader.setMessage(ex.getMessage());
+		}
+	}
+
+	@Override
+	public boolean isLoaded() {
+		return sample != null;
+	}
+
+	public Sample getSample() {
+		return sample;
 	}
 	
 	@Override

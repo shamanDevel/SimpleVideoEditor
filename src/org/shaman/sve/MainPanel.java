@@ -5,17 +5,31 @@
  */
 package org.shaman.sve;
 
+import org.shaman.sve.model.Project;
+import org.shaman.sve.player.Player;
+
 /**
  *
  * @author Sebastian
  */
 public class MainPanel extends javax.swing.JPanel {
-
+	
+	private Project project;
+	private Player player;
+	
 	/**
 	 * Creates new form MainPanel
 	 */
 	public MainPanel() {
 		initComponents();
+	}
+
+	public void setProject(Project project) {
+		this.project = project;
+	}
+
+	public void setPlayer(Player player) {
+		this.player = player;
 	}
 
 	/**
@@ -27,22 +41,75 @@ public class MainPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        playButton = new javax.swing.JButton();
+        stopButton = new javax.swing.JButton();
+
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         setMinimumSize(new java.awt.Dimension(400, 300));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 249, Short.MAX_VALUE)
+        );
+
+        playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/shaman/sve/icons/play16.png"))); // NOI18N
+        playButton.setToolTipText("Play");
+        playButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                playEvent(evt);
+            }
+        });
+
+        stopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/shaman/sve/icons/stop16.png"))); // NOI18N
+        stopButton.setToolTipText("Stop");
+        stopButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopEvent(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 398, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(playButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(stopButton)
+                .addGap(0, 293, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 298, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(playButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(stopButton, javax.swing.GroupLayout.Alignment.TRAILING)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void playEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playEvent
+        player.setTime(0);
+		player.start();
+    }//GEN-LAST:event_playEvent
+
+    private void stopEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopEvent
+        player.stop();
+    }//GEN-LAST:event_stopEvent
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JButton playButton;
+    private javax.swing.JButton stopButton;
     // End of variables declaration//GEN-END:variables
 }

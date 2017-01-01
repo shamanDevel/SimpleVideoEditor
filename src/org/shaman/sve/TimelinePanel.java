@@ -5,6 +5,7 @@
  */
 package org.shaman.sve;
 
+import org.shaman.sve.player.Player;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.logging.Level;
@@ -34,6 +35,7 @@ public class TimelinePanel extends javax.swing.JPanel {
 	private Project project;
 	private UndoableEditSupport undoSupport;
 	private ResourcePanel resourcePanel;
+	private Player player;
 	
 	private JXTreeTable table;
 	private TimelineTreeTableModel tableModel;
@@ -75,6 +77,10 @@ public class TimelinePanel extends javax.swing.JPanel {
 	public void setResourcePanel(ResourcePanel resourcePanel) {
 		this.resourcePanel = resourcePanel;
 		assert (resourcePanel != null);
+	}
+
+	public void setPlayer(Player player) {
+		this.player = player;
 	}
 
 	private class TimelineTreeTableModel extends AbstractTreeTableModel {
@@ -177,6 +183,7 @@ public class TimelinePanel extends javax.swing.JPanel {
 	private void addTimelineObject(final TimelineObject obj) {
 		project.getTimelineObjects().add(obj);
 		tableModel.fireUpdate();
+		player.initTimelineObject(obj);
 		LOG.log(Level.INFO, "timeline object added: {0}", obj);
 		undoSupport.postEdit(new AbstractUndoableEdit() {
 			@Override

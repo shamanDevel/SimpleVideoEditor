@@ -5,6 +5,7 @@
  */
 package org.shaman.sve;
 
+import org.shaman.sve.player.Player;
 import java.awt.BorderLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -38,6 +39,7 @@ public class SimpleVideoEditor extends JFrame {
 	//project
 	private Project project;
 	private boolean changed;
+	private Player player;
 	
 	//UI
 	private JToolBar toolBar;
@@ -175,6 +177,12 @@ public class SimpleVideoEditor extends JFrame {
 	}
 	
 	private void closeProject() {
+		//close player
+		if (player != null) {
+			player.stop();
+			player.destroy();
+			player = null;
+		}
 		
 		//disable buttons
 		saveProjectAction.setEnabled(false);
@@ -257,6 +265,15 @@ public class SimpleVideoEditor extends JFrame {
 		setTitle(project.getFolder().getAbsolutePath());
 		resourcePanel.setProject(project);
 		timelinePanel.setProject(project);
+		mainPanel.setProject(project);
+		
+		//init player
+		player = new Player(project);
+		player.loadResources();
+		player.initTimelineObjects();
+		resourcePanel.setPlayer(player);
+		timelinePanel.setPlayer(player);
+		mainPanel.setPlayer(player);
 	}
 	private void saveProject() {
 		LOG.info("save project");
