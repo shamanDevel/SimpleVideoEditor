@@ -5,6 +5,7 @@
  */
 package org.shaman.sve;
 
+import javax.swing.undo.UndoableEditSupport;
 import org.shaman.sve.model.Project;
 import org.shaman.sve.player.Player;
 
@@ -16,6 +17,9 @@ public class MainPanel extends javax.swing.JPanel {
 	
 	private Project project;
 	private Player player;
+	private UndoableEditSupport undoSupport;
+	private Selections selections;
+	
 	
 	/**
 	 * Creates new form MainPanel
@@ -26,6 +30,14 @@ public class MainPanel extends javax.swing.JPanel {
 
 	public void setProject(Project project) {
 		this.project = project;
+	}
+	
+	public void setUndoSupport(UndoableEditSupport undoSupport) {
+		this.undoSupport = undoSupport;
+	}
+
+	public void setSelections(Selections selections) {
+		this.selections = selections;
 	}
 
 	public void setPlayer(Player player) {

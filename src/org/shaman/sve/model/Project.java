@@ -47,7 +47,11 @@ public class Project {
 	//not persistent
 	private int time;
 	public static final String PROP_TIME = "time";
-
+	private int length;
+	public static final String PROP_LENGTH = "length";
+	public static final String PROP_TIMELINE_OBJECT_CHANGED = "tloChanged";
+	public static final String PROP_TIMELINE_OBJECTS_CHANGED = "tloxChanged";
+	
 	public Project() {
 	}
 
@@ -140,6 +144,22 @@ public class Project {
 	}
 	
 	/**
+	 * Fires a property changed event that the specified obj is changed
+	 * @param obj 
+	 */
+	public void fireTimelineObjectChanged(TimelineObject obj) {
+		propertyChangeSupport.firePropertyChange(PROP_TIMELINE_OBJECT_CHANGED, null, obj);
+	}
+	
+	/**
+	 * Fires a property changed event that all timeline objects are changed.
+	 * This includes adding + removing objects
+	 */
+	public void fireTimelineObjectsChanged() {
+		propertyChangeSupport.firePropertyChange(PROP_TIMELINE_OBJECTS_CHANGED, null, null);
+	}
+	
+	/**
 	 * Get the value of backgroundColor
 	 *
 	 * @return the value of backgroundColor
@@ -179,6 +199,22 @@ public class Project {
 		propertyChangeSupport.firePropertyChange(PROP_TIME, oldTime, time);
 	}
 
+	/**
+	 * @return the total length of the project in msec.
+	 */
+	public int getLength() {
+		return length;
+	}
+
+	/**
+	 * Sets the total length of the project in msec.
+	 * @param length new value of length
+	 */
+	public void setLength(int length) {
+		int oldLength = this.length;
+		this.length = length;
+		propertyChangeSupport.firePropertyChange(PROP_LENGTH, oldLength, length);
+	}
 
 	@Override
 	public String toString() {

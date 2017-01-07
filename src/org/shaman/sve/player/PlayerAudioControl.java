@@ -39,6 +39,7 @@ public class PlayerAudioControl {
 		if (timelineObject.getResource() instanceof AudioResource) {
 			sample = ((AudioResource) timelineObject.getResource()).getSample();
 		} //todo: video
+		timelineObject.setProperty(TimelineObject.PROP_DURATION, (int)Math.ceil(sample.getLength()));
 		samplePlayer = new SamplePlayer(player.getAudioContext(), sample);
 		samplePlayer.setKillOnEnd(false);
 		samplePlayer.setToEnd();

@@ -7,9 +7,11 @@ package org.shaman.sve.player;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.beadsproject.beads.core.AudioContext;
 import net.beadsproject.beads.core.Bead;
+import net.beadsproject.beads.core.UGen;
 import net.beadsproject.beads.ugens.Clock;
 import net.beadsproject.beads.ugens.Gain;
 import org.shaman.sve.model.AudioResource;
@@ -47,10 +49,9 @@ public class Player {
 		ac.out.addInput(masterGain);
 		
 		Clock clock = new Clock(ac, AUDIO_CLOCK_RESOLUTION);
-		clock.setClick(true);
 		clockBead = new ClockBead();
 		clock.addMessageListener(clockBead);
-//		ac.out.addDependent(clock);
+		ac.out.addDependent(clock);
 
 		resourceLoader = new ResourceLoaderImpl();
 	}
@@ -89,7 +90,7 @@ public class Player {
 				audioControls.add(pac);
 			}
 		}
-		clockBead.time = time;
+//		clockBead.time = time;
 		playing = true;
 	}
 	
@@ -124,6 +125,7 @@ public class Player {
 		for (TimelineObject obj : project.getTimelineObjects()) {
 			initTimelineObject(obj);
 		}
+		computeTotalLength();
 	}
 	public void initTimelineObject(TimelineObject obj) {
 		obj.playerProperties.clear();
@@ -138,6 +140,19 @@ public class Player {
 		for (PlayerAudioControl pac : audioControls) {
 			pac.updateAudio(time);
 		}
+	}
+	
+	/**
+	 * Computes the total length of the playback
+	 */
+	private void computeTotalLength() {
+		int length = 0;
+		for (TimelineObject obj : project.getTimelineObjects()) {
+			int len = (int) obj.getProperty(TimelineObject.PROP_START) + (int) obj.getProperty(TimelineObject.PROP_DURATION);
+			length = Math.max(length, len);
+		}
+		LOG.log(Level.INFO, "length of the project: {0} msec", length);
+		project.setLength(length);
 	}
 	
 	private class ResourceLoaderImpl implements Resource.ResourceLoader {
@@ -158,7 +173,7 @@ public class Player {
 		}
 		
 	}
-	
+		
 	private class ClockBead extends Bead {
 		private int time;
 		

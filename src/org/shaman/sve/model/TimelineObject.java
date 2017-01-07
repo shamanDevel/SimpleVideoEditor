@@ -5,9 +5,16 @@
  */
 package org.shaman.sve.model;
 
+import com.l2fprod.common.propertysheet.DefaultProperty;
+import com.l2fprod.common.propertysheet.Property;
+import java.beans.IntrospectionException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.shaman.sve.player.Player;
 import org.simpleframework.xml.Element;
@@ -41,7 +48,7 @@ public class TimelineObject {
 	public static final String PROP_START = "start";
 	/**
 	 * Duration in milliseconds, integer.
-	 * Valid for images.
+	 * Valid for images, video and audio.
 	 */
 	public static final String PROP_DURATION = "duration";
 	
@@ -132,6 +139,39 @@ public class TimelineObject {
 		String oldName = this.name;
 		this.name = name;
 		propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, name);
+	}
+	
+	public Property[] getPropertySheetProperties() throws Exception {
+		ArrayList<Property> list = new ArrayList<>();
+		
+		DefaultProperty nameProp = new DefaultProperty();
+		nameProp.setName("name");
+		nameProp.setDisplayName("Name");
+		nameProp.setType(String.class);
+		nameProp.setValue(getName());
+		list.add(nameProp);
+		
+		for (Map.Entry<String, Object> p : properties.entrySet()) {
+			Property prop = new CustomProperty(p.getKey(), p.getValue());
+			list.add(prop);
+		}
+		
+		return list.toArray(new Property[list.size()]);
+	}
+	private class CustomProperty extends DefaultProperty {
+		private final String property;
+		private final Class<?> clazz;
+
+		public CustomProperty(String property, Object value) {
+			this.property = property;
+			this.clazz = value.getClass();
+			super.setDisplayName(property);
+			super.setEditable(true);
+			super.setValue(value);
+			super.setType(clazz);
+			super.setName(property);
+		}
+		
 	}
 	
 	@Override

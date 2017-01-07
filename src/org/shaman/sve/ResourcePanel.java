@@ -38,6 +38,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 	
 	private Project project;
 	private UndoableEditSupport undoSupport;
+	private Selections selections;
 	private Player player;
 	
 	private DefaultListModel<Resource> listModel;
@@ -67,11 +68,15 @@ public class ResourcePanel extends javax.swing.JPanel {
 		this.undoSupport = undoSupport;
 	}
 
+	public void setSelections(Selections selections) {
+		this.selections = selections;
+	}
+
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
 	
-	public Resource getSelectedResource() {
+	private Resource getSelectedResource() {
 		int idx = resourceList.getSelectedIndex();
 		if (idx >= 0) {
 			return project.getResources().get(idx);
@@ -293,7 +298,7 @@ public class ResourcePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_syncEvent
 
     private void selectionChangedEvent(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_selectionChangedEvent
-        // TODO add your handling code here:
+        selections.setSelectedResource(getSelectedResource());
     }//GEN-LAST:event_selectionChangedEvent
 
 

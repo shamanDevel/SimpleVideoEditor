@@ -40,6 +40,7 @@ public class SimpleVideoEditor extends JFrame {
 	private Project project;
 	private boolean changed;
 	private Player player;
+	private Selections selections;
 	
 	//UI
 	private JToolBar toolBar;
@@ -61,6 +62,7 @@ public class SimpleVideoEditor extends JFrame {
 	public SimpleVideoEditor() throws HeadlessException {
 		getContentPane().setLayout(new BorderLayout());
 		
+		selections = new Selections();
 		undoManager = new UndoManager();
 		undoSupport = new UndoableEditSupport();
 		undoSupport.addUndoableEditListener(new UndoableEditListener() {
@@ -157,22 +159,25 @@ public class SimpleVideoEditor extends JFrame {
 	private JPanel createResourceView() {
 		resourcePanel = new ResourcePanel();
 		resourcePanel.setUndoSupport(undoSupport);
+		resourcePanel.setSelections(selections);
 		return resourcePanel;
 	}
 	private JPanel createPropertyView() {
 		propertyPanel = new PropertyPanel();
-		
+		propertyPanel.setUndoSupport(undoSupport);
+		propertyPanel.setSelections(selections);
 		return propertyPanel;
 	}
 	private JPanel createMainView() {
 		mainPanel = new MainPanel();
-		
+		mainPanel.setUndoSupport(undoSupport);
+		mainPanel.setSelections(selections);
 		return mainPanel;
 	}
 	private JPanel createTimelineView() {
 		timelinePanel = new TimelinePanel();
 		timelinePanel.setUndoSupport(undoSupport);
-		timelinePanel.setResourcePanel(resourcePanel);
+		timelinePanel.setSelections(selections);
 		return timelinePanel;
 	}
 	

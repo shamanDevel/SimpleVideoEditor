@@ -7,13 +7,24 @@ package org.shaman.sve;
 
 import org.shaman.sve.player.Player;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.tree.TreePath;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -21,6 +32,8 @@ import javax.swing.undo.UndoableEditSupport;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
+import org.shaman.sve.model.AudioResource;
+import org.shaman.sve.model.ImageResource;
 import org.shaman.sve.model.Project;
 import org.shaman.sve.model.Resource;
 import org.shaman.sve.model.TimelineObject;
@@ -29,12 +42,12 @@ import org.shaman.sve.model.TimelineObject;
  *
  * @author Sebastian
  */
-public class TimelinePanel extends javax.swing.JPanel {
+public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeListener {
 	private static final Logger LOG = Logger.getLogger(TimelinePanel.class.getName());
 
 	private Project project;
 	private UndoableEditSupport undoSupport;
-	private ResourcePanel resourcePanel;
+	private Selections selections;
 	private Player player;
 	
 	private JXTreeTable table;
@@ -50,13 +63,23 @@ public class TimelinePanel extends javax.swing.JPanel {
 		table = new JXTreeTable(tableModel);
 //		table.setPreferredSize(new Dimension(400, 160));
 		table.setRootVisible(false);
+		table.addTreeSelectionListener(new TreeSelectionListener() {
+			@Override
+			public void valueChanged(TreeSelectionEvent tse) {
+				timelineObjectSelected(tse.getNewLeadSelectionPath());
+			}
+		});
 		timelinePanel.setLayout(new BorderLayout());
 		timelinePanel.add(new JScrollPane(table));
 		timelinePanel.setPreferredSize(new Dimension(400, 158));
+		table.setDefaultRenderer(Object.class, new TimelineCellRenderer());
+		table.getColumn(1).setCellRenderer(new TimelineCellRenderer());
 	}
 	
 	public void setProject(Project project) {
 		this.project = project;
+		project.addPropertyChangeListener(this);
+		
 		//init timeline
 		tableModel.fireUpdate();
 		TableColumn c = table.getColumn(0);
@@ -74,13 +97,22 @@ public class TimelinePanel extends javax.swing.JPanel {
 		this.undoSupport = undoSupport;
 	}
 
-	public void setResourcePanel(ResourcePanel resourcePanel) {
-		this.resourcePanel = resourcePanel;
-		assert (resourcePanel != null);
+	public void setSelections(Selections selections) {
+		this.selections = selections;
 	}
 
 	public void setPlayer(Player player) {
 		this.player = player;
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent pce) {
+		if (pce.getSource() == project) {
+			switch (pce.getPropertyName()) {
+				case Project.PROP_LENGTH:
+					tableModel.fireUpdate();
+			}
+		}
 	}
 
 	private class TimelineTreeTableModel extends AbstractTreeTableModel {
@@ -184,6 +216,7 @@ public class TimelinePanel extends javax.swing.JPanel {
 		project.getTimelineObjects().add(obj);
 		tableModel.fireUpdate();
 		player.initTimelineObject(obj);
+		project.fireTimelineObjectsChanged();
 		LOG.log(Level.INFO, "timeline object added: {0}", obj);
 		undoSupport.postEdit(new AbstractUndoableEdit() {
 			@Override
@@ -191,6 +224,7 @@ public class TimelinePanel extends javax.swing.JPanel {
 				super.undo();
 				project.getTimelineObjects().remove(obj);
 				tableModel.fireUpdate();
+				project.fireTimelineObjectsChanged();
 				LOG.info("undo: add timeline object");
 			}
 
@@ -199,6 +233,7 @@ public class TimelinePanel extends javax.swing.JPanel {
 				super.redo();
 				project.getTimelineObjects().add(obj);
 				tableModel.fireUpdate();
+				project.fireTimelineObjectsChanged();
 				LOG.info("redo: add timeline object");
 			}
 		
@@ -216,6 +251,63 @@ public class TimelinePanel extends javax.swing.JPanel {
 		//todo: where is the right place to do this?
 		obj.setProperty(TimelineObject.PROP_START, (int) 0);
 		addTimelineObject(obj);
+	}
+	
+	private class TimelineCellRenderer extends JPanel implements TableCellRenderer {
+		private int start;
+		private int duration;
+		private int length;
+		private Color color;
+		
+		public TimelineCellRenderer() {
+			setOpaque(true);
+		}
+		
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object obj, boolean isSelected, boolean hasFocus, int row, int column) {
+			start = 0;
+			duration = 0;
+			length = project.getLength();
+			color = Color.BLACK;
+			
+			if (obj instanceof TimelineObject) {
+				TimelineObject to = (TimelineObject) obj;
+				start = to.getProperty(TimelineObject.PROP_START);
+				duration = to.getProperty(TimelineObject.PROP_DURATION);
+				if (to.getResource() instanceof AudioResource) {
+					color = Color.BLUE;
+				} else if (to.getResource() instanceof ImageResource) {
+					color = Color.ORANGE;
+				} else { //video
+					color = Color.GREEN;
+				}
+			}
+			
+			if (isSelected) {
+				setBackground(table.getSelectionBackground());
+			} else {
+				setBackground(table.getBackground());
+			}
+			
+			return this;
+		}
+
+		@Override
+		public void paint(Graphics g) {
+			super.paint(g);
+			int w = getWidth();
+			int h = getHeight();
+			int intent = 3;
+			int sx = w * start / length;
+			int ex = w * (start+duration) / length;
+			int sy = intent;
+			int ey = getHeight() - sy;
+			g.setColor(color);
+			g.fillRect(sx, sy, ex-sx, ey-sy);
+			g.setColor(color.darker());
+			g.drawRect(sx, sy, ex-sx, ey-sy);
+		}
+
 	}
 	
 	/**
@@ -288,7 +380,7 @@ public class TimelinePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonEvent
-        Resource res = resourcePanel.getSelectedResource();
+        Resource res = selections.getSelectedResource();
 		if (res != null) {
 			addResource(res);
 		}
@@ -298,6 +390,14 @@ public class TimelinePanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_removeButtonEvent
 
+	private void timelineObjectSelected(TreePath path) {
+		Object leaf = path.getLastPathComponent();
+		if (leaf instanceof TimelineObject) {
+			selections.setSelectedTimelineObject((TimelineObject) leaf);
+		} else {
+			selections.setSelectedTimelineObject(null);
+		}
+	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
