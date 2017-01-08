@@ -8,14 +8,12 @@ package org.shaman.sve;
 import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertySheet;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyDescriptor;
+import java.awt.BorderLayout;
+import java.beans.*;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.undo.UndoableEditSupport;
 import org.shaman.sve.model.Project;
 import org.shaman.sve.model.TimelineObject;
@@ -33,6 +31,7 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
 	private Selections selections;
 	
 	private PropertySheetPanel sheet;
+	private Object selectedObject;
 	
 	/**
 	 * Creates new form PropertyPanel
@@ -40,11 +39,13 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
 	public PropertyPanel() {
 		sheet = new PropertySheetPanel();
 		initComponents();
-		sheet.setMode(PropertySheet.VIEW_AS_CATEGORIES);
+		sheet.setMode(PropertySheet.VIEW_AS_FLAT_LIST);
+		sheet.setToolBarVisible(true);
 		sheet.setDescriptionVisible(true);
-		sheet.setSortingCategories(true);
-		sheet.setSortingProperties(true);
-		sheet.setRestoreToggleStates(true);
+		
+		mainPanel.setLayout(new BorderLayout());
+		mainPanel.add(sheet);
+		
 		setSelectedObject(null);
 	}
 
@@ -63,6 +64,12 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
 	}
 	
 	public void setSelectedObject(Object obj) {
+//		if (selectedObject != null) {
+//			if (selectedObject instanceof TimelineObject) {
+//				((TimelineObject) obj).removePropertyChangeListener(sheet);
+//			}
+//		}
+		
 		LOG.log(Level.INFO, "{0} selected", obj);
 		if (obj == null) {
 			currentObjectLabel.setText("no object selected");
@@ -70,11 +77,14 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
 		} else {
 			currentObjectLabel.setText(obj.toString());
 			try {
-				if (obj instanceof TimelineObject) {
-					Property[] px = ((TimelineObject) obj).getPropertySheetProperties();
-					sheet.setProperties(px);
+				BeanInfo info = Introspector.getBeanInfo(obj.getClass());
+				sheet.setBeanInfo(info);
+//				sheet.readFromObject(obj);
+				Property[] props = sheet.getProperties();
+				for (Property prop : props) {
+					prop.readFromObject(obj);
 				}
-				sheet.readFromObject(obj);
+				sheet.repaint();
 			} catch (Exception ex) {
 				Logger.getLogger(PropertyPanel.class.getName()).log(Level.SEVERE, null, ex);
 			}
@@ -92,12 +102,15 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
     private void initComponents() {
 
         currentObjectLabel = new javax.swing.JLabel();
-        mainPanel = sheet;
+        mainPanel = new javax.swing.JPanel();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         setMinimumSize(new java.awt.Dimension(150, 200));
 
         currentObjectLabel.setText("jLabel1");
+
+        mainPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        mainPanel.setPreferredSize(new java.awt.Dimension(200, 424));
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -107,7 +120,7 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 424, Short.MAX_VALUE)
+            .addGap(0, 420, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

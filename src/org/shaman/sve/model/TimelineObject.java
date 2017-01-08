@@ -7,6 +7,7 @@ package org.shaman.sve.model;
 
 import com.l2fprod.common.propertysheet.DefaultProperty;
 import com.l2fprod.common.propertysheet.Property;
+import com.sun.org.apache.xalan.internal.utils.Objects;
 import java.beans.IntrospectionException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -16,6 +17,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 import org.shaman.sve.player.Player;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementMap;
@@ -29,78 +34,25 @@ import org.simpleframework.xml.ElementMap;
 public class TimelineObject {
 	private static final Logger LOG = Logger.getLogger(TimelineObject.class.getName());
 	
-	private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+	protected transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
 	@Element
-	private Resource resource;
-	public static final String PROP_RESOURCE = "resource";
-	
-	@Element
-	private String name;
+	protected String name;
 	public static final String PROP_NAME = "name";
 	
-	@ElementMap
-	private HashMap<String, Object> properties = new HashMap<>();
-	/**
-	 * Starting time in milliseconds, integer.
-	 * Valid for all resources that have no parent.
-	 */
-	public static final String PROP_START = "start";
-	/**
-	 * Duration in milliseconds, integer.
-	 * Valid for images, video and audio.
-	 */
-	public static final String PROP_DURATION = "duration";
+	@Element
+	protected boolean enabled = true;
+	public static final String PROP_ENABLED = "enabled";
+	
+	protected UndoManager undoManager;
 	
 	/**
 	 * Storage for the player
 	 */
 	public final HashMap<String, Object> playerProperties = new HashMap<>();
 
-	/**
-	 * Get the value of resource
-	 *
-	 * @return the value of resource
-	 */
-	public Resource getResource() {
-		return resource;
-	}
-
-	/**
-	 * Set the value of resource
-	 *
-	 * @param resource new value of resource
-	 */
-	public void setResource(Resource resource) {
-		Resource oldResource = this.resource;
-		this.resource = resource;
-		propertyChangeSupport.firePropertyChange(PROP_RESOURCE, oldResource, resource);
-		setName(resource.getName());
-	}
-
-	public HashMap<String, Object> getProperties() {
-		return properties;
-	}
-
-	public void setProperties(HashMap<String, Object> properties) {
-		if (properties == null) {
-			properties = new HashMap<>();
-		}
-		this.properties = properties;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public <T> T getProperty(String key) {
-		return (T) properties.get(key);
-	}
-	
-	public boolean hasProperty(String key) {
-		return properties.containsKey(key);
-	}
-	
-	public <T> void setProperty(String key, T value) {
-		Object old = properties.put(key, value);
-		propertyChangeSupport.firePropertyChange(key, old, value);
+	public void setUndoManager(UndoManager undoManager) {
+		this.undoManager = undoManager;
 	}
 
 	/**
@@ -133,47 +85,72 @@ public class TimelineObject {
 	/**
 	 * Set the value of name
 	 *
-	 * @param name new value of name
+	 * @param newName new value of name
 	 */
-	public void setName(String name) {
-		String oldName = this.name;
-		this.name = name;
-		propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, name);
-	}
-	
-	public Property[] getPropertySheetProperties() throws Exception {
-		ArrayList<Property> list = new ArrayList<>();
-		
-		DefaultProperty nameProp = new DefaultProperty();
-		nameProp.setName("name");
-		nameProp.setDisplayName("Name");
-		nameProp.setType(String.class);
-		nameProp.setValue(getName());
-		list.add(nameProp);
-		
-		for (Map.Entry<String, Object> p : properties.entrySet()) {
-			Property prop = new CustomProperty(p.getKey(), p.getValue());
-			list.add(prop);
-		}
-		
-		return list.toArray(new Property[list.size()]);
-	}
-	private class CustomProperty extends DefaultProperty {
-		private final String property;
-		private final Class<?> clazz;
+	public void setName(final String newName) {
+		final String oldName = this.name;
+		this.name = newName;
+		propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, newName);
+		if (!Objects.equals(oldName, newName) && undoManager != null) {
+			undoManager.addEdit(new AbstractUndoableEdit() {
 
-		public CustomProperty(String property, Object value) {
-			this.property = property;
-			this.clazz = value.getClass();
-			super.setDisplayName(property);
-			super.setEditable(true);
-			super.setValue(value);
-			super.setType(clazz);
-			super.setName(property);
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					name = oldName;
+					propertyChangeSupport.firePropertyChange(PROP_NAME, newName, oldName);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					name = newName;
+					propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, newName);
+				}
+			
+			});
 		}
-		
 	}
-	
+
+	/**
+	 * Get the value of enabled
+	 *
+	 * @return the value of enabled
+	 */
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	/**
+	 * Set the value of enabled
+	 *
+	 * @param newEnabled new value of enabled
+	 */
+	public void setEnabled(final boolean newEnabled) {
+		final boolean oldEnabled = this.enabled;
+		this.enabled = newEnabled;
+		propertyChangeSupport.firePropertyChange(PROP_ENABLED, oldEnabled, newEnabled);
+		if (!Objects.equals(oldEnabled, newEnabled) && undoManager != null) {
+			undoManager.addEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					enabled = oldEnabled;
+					propertyChangeSupport.firePropertyChange(PROP_ENABLED, newEnabled, oldEnabled);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					enabled = newEnabled;
+					propertyChangeSupport.firePropertyChange(PROP_ENABLED, oldEnabled, newEnabled);
+				}
+			
+			});
+		}
+	}
+
 	@Override
 	public String toString() {
 		return getName();

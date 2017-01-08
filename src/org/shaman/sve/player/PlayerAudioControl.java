@@ -11,8 +11,7 @@ import java.util.logging.Logger;
 import net.beadsproject.beads.data.Sample;
 import net.beadsproject.beads.ugens.Gain;
 import net.beadsproject.beads.ugens.SamplePlayer;
-import org.shaman.sve.model.AudioResource;
-import org.shaman.sve.model.TimelineObject;
+import org.shaman.sve.model.*;
 
 /**
  * controls an audio input: TimelineObject linked to a audio resource or video resource
@@ -22,7 +21,7 @@ public class PlayerAudioControl {
 
 	private static final Logger LOG = Logger.getLogger(PlayerAudioControl.class.getName());
 	
-	private final TimelineObject timelineObject;
+	private final ResourceTimelineObject timelineObject;
 	private final Player player;
 
 	private SamplePlayer samplePlayer;
@@ -31,15 +30,19 @@ public class PlayerAudioControl {
 	private int start;
 	private boolean running;
 	
-	public PlayerAudioControl(TimelineObject timelineObject, Player player) {
+	public PlayerAudioControl(ResourceTimelineObject<? extends Resource> timelineObject, Player player) {
 		this.timelineObject = timelineObject;
 		this.player = player;
 		
 		Sample sample = null;
-		if (timelineObject.getResource() instanceof AudioResource) {
-			sample = ((AudioResource) timelineObject.getResource()).getSample();
-		} //todo: video
-		timelineObject.setProperty(TimelineObject.PROP_DURATION, (int)Math.ceil(sample.getLength()));
+		
+		Resource res = timelineObject.getResource();
+		if (res instanceof AudioResource) {
+			sample = ((AudioResource) res).getSample();
+		} 
+		//TODO: video
+		
+		timelineObject.setDuration((int)Math.ceil(sample.getLength()));
 		samplePlayer = new SamplePlayer(player.getAudioContext(), sample);
 		samplePlayer.setKillOnEnd(false);
 		samplePlayer.setToEnd();
@@ -49,12 +52,12 @@ public class PlayerAudioControl {
 	}
 	
 	public void setTime(int msec) {
-		start = timelineObject.getProperty(TimelineObject.PROP_START);
+		start = timelineObject.getStart();
 		pos = msec - start;
 	}
 	
 	public void start() {
-		start = timelineObject.getProperty(TimelineObject.PROP_START);
+		start = timelineObject.getStart();
 		if (pos >= 0) {
 			samplePlayer.start(pos);
 			running = true;

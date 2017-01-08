@@ -9,15 +9,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.undo.UndoManager;
 import net.beadsproject.beads.core.AudioContext;
 import net.beadsproject.beads.core.Bead;
 import net.beadsproject.beads.core.UGen;
 import net.beadsproject.beads.ugens.Clock;
 import net.beadsproject.beads.ugens.Gain;
-import org.shaman.sve.model.AudioResource;
-import org.shaman.sve.model.Project;
-import org.shaman.sve.model.Resource;
-import org.shaman.sve.model.TimelineObject;
+import org.shaman.sve.model.*;
 
 /**
  *
@@ -31,6 +29,7 @@ public class Player {
 	private static final String AUDIO_CONTROL = "audioControl";
 	
 	private final Project project;
+	private final UndoManager undoManager;
 	private final AudioContext ac;
 	private final Gain masterGain;
 	private final ResourceLoaderImpl resourceLoader;
@@ -40,8 +39,9 @@ public class Player {
 	private ClockBead clockBead;
 	private ArrayList<PlayerAudioControl> audioControls = new ArrayList<>();
 
-	public Player(Project project) {
+	public Player(Project project, UndoManager undoManager) {
 		this.project = project;
+		this.undoManager = undoManager;
 		
 		ac = new AudioContext(10000);
 		ac.start();
@@ -127,12 +127,17 @@ public class Player {
 		}
 		computeTotalLength();
 	}
-	public void initTimelineObject(TimelineObject obj) {
-		obj.playerProperties.clear();
-		Resource res = obj.getResource();
-		if (res instanceof AudioResource) {
-			PlayerAudioControl pac = new PlayerAudioControl(obj, this);
-			obj.playerProperties.put(AUDIO_CONTROL, pac);
+	public void initTimelineObject(TimelineObject to) {
+		to.playerProperties.clear();
+		to.setUndoManager(undoManager);
+		if (to instanceof ResourceTimelineObject) {
+			@SuppressWarnings("unchecked")
+			ResourceTimelineObject<Resource> obj = (ResourceTimelineObject<Resource>) to;
+			Resource res = obj.getResource();
+			if (res instanceof AudioResource) {
+				PlayerAudioControl pac = new PlayerAudioControl(obj, this);
+				obj.playerProperties.put(AUDIO_CONTROL, pac);
+			}
 		}
 	}
 	
@@ -148,8 +153,10 @@ public class Player {
 	private void computeTotalLength() {
 		int length = 0;
 		for (TimelineObject obj : project.getTimelineObjects()) {
-			int len = (int) obj.getProperty(TimelineObject.PROP_START) + (int) obj.getProperty(TimelineObject.PROP_DURATION);
-			length = Math.max(length, len);
+			if (obj instanceof ResourceTimelineObject) {
+				int len = ((ResourceTimelineObject)obj).getStart() + ((ResourceTimelineObject)obj).getDuration();
+				length = Math.max(length, len);
+			}
 		}
 		LOG.log(Level.INFO, "length of the project: {0} msec", length);
 		project.setLength(length);

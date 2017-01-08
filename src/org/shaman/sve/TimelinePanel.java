@@ -32,11 +32,7 @@ import javax.swing.undo.UndoableEditSupport;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
-import org.shaman.sve.model.AudioResource;
-import org.shaman.sve.model.ImageResource;
-import org.shaman.sve.model.Project;
-import org.shaman.sve.model.Resource;
-import org.shaman.sve.model.TimelineObject;
+import org.shaman.sve.model.*;
 
 /**
  *
@@ -214,9 +210,9 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 	 */
 	private void addTimelineObject(final TimelineObject obj) {
 		project.getTimelineObjects().add(obj);
-		tableModel.fireUpdate();
 		player.initTimelineObject(obj);
 		project.fireTimelineObjectsChanged();
+		tableModel.fireUpdate();
 		LOG.log(Level.INFO, "timeline object added: {0}", obj);
 		undoSupport.postEdit(new AbstractUndoableEdit() {
 			@Override
@@ -245,11 +241,11 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 	 * @param res 
 	 */
 	private void addResource(Resource res) {
-		TimelineObject obj = new TimelineObject();
-		obj.setResource(res);
-		//initialize object
-		//todo: where is the right place to do this?
-		obj.setProperty(TimelineObject.PROP_START, (int) 0);
+		TimelineObject obj = null;
+		if (res instanceof AudioResource) {
+			obj = new AudioTimelineObject((AudioResource) res);
+		} 
+		//TODO: video + image
 		addTimelineObject(obj);
 	}
 	
@@ -270,10 +266,11 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 			length = project.getLength();
 			color = Color.BLACK;
 			
-			if (obj instanceof TimelineObject) {
-				TimelineObject to = (TimelineObject) obj;
-				start = to.getProperty(TimelineObject.PROP_START);
-				duration = to.getProperty(TimelineObject.PROP_DURATION);
+			if (obj instanceof ResourceTimelineObject) {
+				@SuppressWarnings("unchecked")
+				ResourceTimelineObject<Resource> to = (ResourceTimelineObject<Resource>) obj;
+				start = to.getStart();
+				duration = to.getDuration();
 				if (to.getResource() instanceof AudioResource) {
 					color = Color.BLUE;
 				} else if (to.getResource() instanceof ImageResource) {
@@ -295,6 +292,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		@Override
 		public void paint(Graphics g) {
 			super.paint(g);
+			if (length == 0) return;
 			int w = getWidth();
 			int h = getHeight();
 			int intent = 3;
