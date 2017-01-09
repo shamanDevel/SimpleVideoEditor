@@ -31,7 +31,7 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
 	private Selections selections;
 	
 	private PropertySheetPanel sheet;
-	private Object selectedObject;
+	private TimelineObject selectedObject;
 	
 	/**
 	 * Creates new form PropertyPanel
@@ -42,6 +42,7 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
 		sheet.setMode(PropertySheet.VIEW_AS_FLAT_LIST);
 		sheet.setToolBarVisible(true);
 		sheet.setDescriptionVisible(true);
+		sheet.addPropertySheetChangeListener(this);
 		
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(sheet);
@@ -63,18 +64,18 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
 		selections.addPropertyChangeListener(this);
 	}
 	
-	public void setSelectedObject(Object obj) {
-//		if (selectedObject != null) {
-//			if (selectedObject instanceof TimelineObject) {
-//				((TimelineObject) obj).removePropertyChangeListener(sheet);
-//			}
-//		}
+	public void setSelectedObject(TimelineObject obj) {
+		if (selectedObject != null) {
+			selectedObject.removePropertyChangeListener(this);
+		}
+		selectedObject = obj;
 		
 		LOG.log(Level.INFO, "{0} selected", obj);
 		if (obj == null) {
 			currentObjectLabel.setText("no object selected");
 			sheet.setProperties(new Property[0]);
 		} else {
+			obj.addPropertyChangeListener(this);
 			currentObjectLabel.setText(obj.toString());
 			try {
 				BeanInfo info = Introspector.getBeanInfo(obj.getClass());
@@ -83,6 +84,7 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
 				Property[] props = sheet.getProperties();
 				for (Property prop : props) {
 					prop.readFromObject(obj);
+					prop.addPropertyChangeListener(this);
 				}
 				sheet.repaint();
 			} catch (Exception ex) {
@@ -152,9 +154,22 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
 	@Override
 	public void propertyChange(PropertyChangeEvent pce) {
 		if (pce.getSource() == selections) {
-			if (pce.getPropertyName() == Selections.PROP_SELECTED_TIMELINE_OBJECT) {
-				setSelectedObject(pce.getNewValue());
+			if (pce.getPropertyName().equals(Selections.PROP_SELECTED_TIMELINE_OBJECT)) {
+				setSelectedObject((TimelineObject) pce.getNewValue());
 			}
+		} else if (pce.getSource() == sheet && selectedObject != null) {
+			LOG.info("value edited");
+			project.fireTimelineObjectChanged(selectedObject);
+		} else if (pce.getSource() instanceof Property && selectedObject != null) {
+			LOG.info("value edited");
+			((Property) pce.getSource()).writeToObject(selectedObject);
+			project.fireTimelineObjectChanged(selectedObject);
+		} else if (pce.getSource() == selectedObject) {
+			Property[] props = sheet.getProperties();
+			for (Property prop : props) {
+				prop.readFromObject(selectedObject);
+			}
+			project.fireTimelineObjectChanged(selectedObject);
 		}
 	}
 }

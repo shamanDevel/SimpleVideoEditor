@@ -106,7 +106,14 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		if (pce.getSource() == project) {
 			switch (pce.getPropertyName()) {
 				case Project.PROP_LENGTH:
+					table.repaint();
+					break;
+				case Project.PROP_TIMELINE_OBJECTS_CHANGED:
 					tableModel.fireUpdate();
+					break;
+				case Project.PROP_TIMELINE_OBJECT_CHANGED:
+					tableModel.fireCurrentUpdate();
+					break;
 			}
 		}
 	}
@@ -123,6 +130,12 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 			}
 		}
 		
+		public void fireCurrentUpdate() {
+			for (TreeModelListener l : getTreeModelListeners()) {
+				l.treeNodesChanged(new TreeModelEvent(this, table.getTreeSelectionModel().getLeadSelectionPath()));
+			}
+		}
+		
 		@Override
 		public int getColumnCount() {
 			return 2;
@@ -130,17 +143,17 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 
 		@Override
 		public boolean isCellEditable(Object node, int column) {
-			if ((node instanceof TimelineObject) && (column == 0)) {
-				return true; //edit name of the object
-			}
+//			if ((node instanceof TimelineObject) && (column == 0)) {
+//				return true; //edit name of the object
+//			}
 			return false;
 		}
 
 		@Override
 		public void setValueAt(Object value, Object node, int column) {
-			if ((node instanceof TimelineObject) && (column == 0)) {
-				((TimelineObject) node).setName((String) value);
-			}
+//			if ((node instanceof TimelineObject) && (column == 0)) {
+//				((TimelineObject) node).setName((String) value);
+//			}
 		}
 		
 		@Override
@@ -389,6 +402,9 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
     }//GEN-LAST:event_removeButtonEvent
 
 	private void timelineObjectSelected(TreePath path) {
+		if (path == null) {
+			return;
+		}
 		Object leaf = path.getLastPathComponent();
 		if (leaf instanceof TimelineObject) {
 			selections.setSelectedTimelineObject((TimelineObject) leaf);

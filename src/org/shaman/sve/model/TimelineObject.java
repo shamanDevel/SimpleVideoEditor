@@ -5,25 +5,14 @@
  */
 package org.shaman.sve.model;
 
-import com.l2fprod.common.propertysheet.DefaultProperty;
-import com.l2fprod.common.propertysheet.Property;
 import com.sun.org.apache.xalan.internal.utils.Objects;
-import java.beans.IntrospectionException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
+import javax.swing.undo.*;
 import org.shaman.sve.player.Player;
 import org.simpleframework.xml.Element;
-import org.simpleframework.xml.ElementMap;
 
 /**
  * This class represents an object in the timeline.
@@ -44,15 +33,15 @@ public class TimelineObject {
 	protected boolean enabled = true;
 	public static final String PROP_ENABLED = "enabled";
 	
-	protected UndoManager undoManager;
+	protected UndoableEditSupport undoSupport;
 	
 	/**
 	 * Storage for the player
 	 */
 	public final HashMap<String, Object> playerProperties = new HashMap<>();
 
-	public void setUndoManager(UndoManager undoManager) {
-		this.undoManager = undoManager;
+	public void setUndoSupport(UndoableEditSupport undoSupport) {
+		this.undoSupport = undoSupport;
 	}
 
 	/**
@@ -91,8 +80,8 @@ public class TimelineObject {
 		final String oldName = this.name;
 		this.name = newName;
 		propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, newName);
-		if (!Objects.equals(oldName, newName) && undoManager != null) {
-			undoManager.addEdit(new AbstractUndoableEdit() {
+		if (!Objects.equals(oldName, newName) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
 
 				@Override
 				public void undo() throws CannotUndoException {
@@ -130,8 +119,8 @@ public class TimelineObject {
 		final boolean oldEnabled = this.enabled;
 		this.enabled = newEnabled;
 		propertyChangeSupport.firePropertyChange(PROP_ENABLED, oldEnabled, newEnabled);
-		if (!Objects.equals(oldEnabled, newEnabled) && undoManager != null) {
-			undoManager.addEdit(new AbstractUndoableEdit() {
+		if (!Objects.equals(oldEnabled, newEnabled) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
 
 				@Override
 				public void undo() throws CannotUndoException {

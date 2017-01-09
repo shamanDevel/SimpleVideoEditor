@@ -271,9 +271,10 @@ public class SimpleVideoEditor extends JFrame {
 		resourcePanel.setProject(project);
 		timelinePanel.setProject(project);
 		mainPanel.setProject(project);
+		propertyPanel.setProject(project);
 		
 		//init player
-		player = new Player(project, undoManager);
+		player = new Player(project, undoSupport);
 		player.loadResources();
 		player.initTimelineObjects();
 		resourcePanel.setPlayer(player);

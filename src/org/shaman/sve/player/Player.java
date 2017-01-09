@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEditSupport;
 import net.beadsproject.beads.core.AudioContext;
 import net.beadsproject.beads.core.Bead;
 import net.beadsproject.beads.core.UGen;
@@ -29,7 +30,7 @@ public class Player {
 	private static final String AUDIO_CONTROL = "audioControl";
 	
 	private final Project project;
-	private final UndoManager undoManager;
+	private final UndoableEditSupport undoSupport;
 	private final AudioContext ac;
 	private final Gain masterGain;
 	private final ResourceLoaderImpl resourceLoader;
@@ -39,9 +40,9 @@ public class Player {
 	private ClockBead clockBead;
 	private ArrayList<PlayerAudioControl> audioControls = new ArrayList<>();
 
-	public Player(Project project, UndoManager undoManager) {
+	public Player(Project project, UndoableEditSupport undoSupport) {
 		this.project = project;
-		this.undoManager = undoManager;
+		this.undoSupport = undoSupport;
 		
 		ac = new AudioContext(10000);
 		ac.start();
@@ -129,7 +130,7 @@ public class Player {
 	}
 	public void initTimelineObject(TimelineObject to) {
 		to.playerProperties.clear();
-		to.setUndoManager(undoManager);
+		to.setUndoSupport(undoSupport);
 		if (to instanceof ResourceTimelineObject) {
 			@SuppressWarnings("unchecked")
 			ResourceTimelineObject<Resource> obj = (ResourceTimelineObject<Resource>) to;

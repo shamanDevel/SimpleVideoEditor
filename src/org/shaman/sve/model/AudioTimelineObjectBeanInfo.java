@@ -35,7 +35,7 @@ public class AudioTimelineObjectBeanInfo extends SimpleBeanInfo {
         PropertyDescriptor[] properties = new PropertyDescriptor[5];
     
         try {
-            properties[PROPERTY_duration] = new PropertyDescriptor ( "duration", org.shaman.sve.model.AudioTimelineObject.class, "getDuration", "setDuration" ); // NOI18N
+            properties[PROPERTY_duration] = new PropertyDescriptor ( "duration", org.shaman.sve.model.AudioTimelineObject.class, "getDuration", null ); // NOI18N
             properties[PROPERTY_duration].setBound ( true );
             properties[PROPERTY_enabled] = new PropertyDescriptor ( "enabled", org.shaman.sve.model.AudioTimelineObject.class, "isEnabled", "setEnabled" ); // NOI18N
             properties[PROPERTY_enabled].setBound ( true );

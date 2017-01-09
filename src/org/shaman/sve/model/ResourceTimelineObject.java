@@ -58,8 +58,8 @@ public abstract class ResourceTimelineObject<R extends Resource> extends Timelin
 		this.resource = newResource;
 		propertyChangeSupport.firePropertyChange(PROP_RESOURCE, oldResource, newResource);
 		setName(newResource.getName());
-		if (!Objects.equals(oldResource, newResource) && undoManager != null) {
-			undoManager.addEdit(new AbstractUndoableEdit() {
+		if (!Objects.equals(oldResource, newResource) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
 
 				@Override
 				public void undo() throws CannotUndoException {
@@ -100,8 +100,8 @@ public abstract class ResourceTimelineObject<R extends Resource> extends Timelin
 		this.start = newStart;
 		propertyChangeSupport.firePropertyChange(PROP_START, oldStart, newStart);
 		
-		if (!Objects.equals(oldStart, newStart) && undoManager != null) {
-			undoManager.addEdit(new AbstractUndoableEdit() {
+		if (!Objects.equals(oldStart, newStart) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
 
 				@Override
 				public void undo() throws CannotUndoException {
@@ -140,8 +140,8 @@ public abstract class ResourceTimelineObject<R extends Resource> extends Timelin
 		this.duration = newDuration;
 		propertyChangeSupport.firePropertyChange(PROP_DURATION, oldDuration, newDuration);
 		
-		if (!Objects.equals(oldDuration, newDuration) && undoManager != null) {
-			undoManager.addEdit(new AbstractUndoableEdit() {
+		if (!Objects.equals(oldDuration, newDuration) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
 
 				@Override
 				public void undo() throws CannotUndoException {
