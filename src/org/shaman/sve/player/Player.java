@@ -5,6 +5,8 @@
  */
 package org.shaman.sve.player;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -29,11 +31,14 @@ public class Player {
 	private static final int AUDIO_CLOCK_RESOLUTION = 10; //every 10 msec
 	private static final String AUDIO_CONTROL = "audioControl";
 	
+	public static final String PROP_PLAYING = "playing";
+	
 	private final Project project;
 	private final UndoableEditSupport undoSupport;
 	private final AudioContext ac;
 	private final Gain masterGain;
 	private final ResourceLoaderImpl resourceLoader;
+	private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
 	private boolean playing;
 	private int time;
@@ -65,12 +70,24 @@ public class Player {
 		return masterGain;
 	}
 	
+	public void addPropertyChangeListener(PropertyChangeListener l) {
+		propertyChangeSupport.addPropertyChangeListener(l);
+	}
+	
+	public void removePropertyChangeListener(PropertyChangeListener l) {
+		propertyChangeSupport.removePropertyChangeListener(l);
+	}
+	
 	/**
 	 * Sets the selected time of playback in msec.
 	 * @param msec 
 	 */
 	public void setTime(int msec) {
 		time = msec;
+	}
+	
+	public boolean isPlaying() {
+		return playing;
 	}
 	
 	/**
@@ -91,8 +108,9 @@ public class Player {
 				audioControls.add(pac);
 			}
 		}
-//		clockBead.time = time;
+		clockBead.start(time);
 		playing = true;
+		propertyChangeSupport.firePropertyChange(PROP_PLAYING, false, true);
 	}
 	
 	/**
@@ -107,6 +125,7 @@ public class Player {
 			pac.stop();
 		}
 		playing = false;
+		propertyChangeSupport.firePropertyChange(PROP_PLAYING, true, false);
 	}
 	
 	public void destroy() {
@@ -142,10 +161,15 @@ public class Player {
 		}
 	}
 	
-	private void updateAudio(int time) {
+	private void updateAudio(int msec) {
+//		if (msec > project.getLength()) {
+//			stop();
+//			return;
+//		}
 		for (PlayerAudioControl pac : audioControls) {
-			pac.updateAudio(time);
+			pac.updateAudio(msec);
 		}
+		project.setTime(msec);
 	}
 	
 	/**
@@ -183,13 +207,19 @@ public class Player {
 	}
 		
 	private class ClockBead extends Bead {
-		private int time;
+		private int startTime;
+		private long lastTime;
+		
+		private void start(int msec) {
+			startTime = msec;
+			lastTime = System.currentTimeMillis();
+		}
 		
 		@Override
 		protected void messageReceived(Bead bead) {
 			if (Player.this.playing) {
-				time += AUDIO_CLOCK_RESOLUTION;
-				Player.this.updateAudio(time);
+				int elapsed = (int) (System.currentTimeMillis() - lastTime);
+				Player.this.updateAudio(startTime + elapsed);
 			}
 		}
 		

@@ -106,6 +106,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		if (pce.getSource() == project) {
 			switch (pce.getPropertyName()) {
 				case Project.PROP_LENGTH:
+				case Project.PROP_TIME:
 					table.repaint();
 					break;
 				case Project.PROP_TIMELINE_OBJECTS_CHANGED:
@@ -266,6 +267,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		private int start;
 		private int duration;
 		private int length;
+		private int time;
 		private Color color;
 		
 		public TimelineCellRenderer() {
@@ -278,6 +280,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 			duration = 0;
 			length = project.getLength();
 			color = Color.BLACK;
+			time = project.getTime();
 			
 			if (obj instanceof ResourceTimelineObject) {
 				@SuppressWarnings("unchecked")
@@ -317,6 +320,9 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 			g.fillRect(sx, sy, ex-sx, ey-sy);
 			g.setColor(color.darker());
 			g.drawRect(sx, sy, ex-sx, ey-sy);
+			int tx = w * time / length;
+			g.setColor(Color.RED);
+			g.fillRect(tx, 0, 2, h);
 		}
 
 	}

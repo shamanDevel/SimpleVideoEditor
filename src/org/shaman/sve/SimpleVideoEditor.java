@@ -251,16 +251,19 @@ public class SimpleVideoEditor extends JFrame {
 				return;
 			}
 			Settings.setLastDirectory(fc.getCurrentDirectory());
-			closeProject();
-			Serializer serializer = SerializationUtils.createSerializer();
-			File source = new File(fc.getSelectedFile(), PROJECT_FILE_NAME);
-			try {
-				project = serializer.read(Project.class, source);
-				projectLoaded();
-				LOG.info("project loaded");
-			} catch (Exception ex) {
-				LOG.log(Level.SEVERE, null, ex);
-			}
+			loadProject(fc.getSelectedFile());
+		}
+	}
+	private void loadProject(File dir) {
+		closeProject();
+		Serializer serializer = SerializationUtils.createSerializer();
+		File source = new File(dir, PROJECT_FILE_NAME);
+		try {
+			project = serializer.read(Project.class, source);
+			projectLoaded();
+			LOG.info("project loaded");
+		} catch (Exception ex) {
+			LOG.log(Level.SEVERE, null, ex);
 		}
 	}
 	/**
@@ -331,6 +334,8 @@ public class SimpleVideoEditor extends JFrame {
 		sve.pack();
 		sve.setVisible(true);
 		sve.setLocationRelativeTo(null);
+		
+		sve.loadProject(new File("C:\\Users\\Sebastian\\Documents\\Java\\SimpleVideoEditorProjects\\Project1"));
 	}
 	
 }

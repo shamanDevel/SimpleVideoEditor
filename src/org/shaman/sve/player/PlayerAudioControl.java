@@ -60,6 +60,7 @@ public class PlayerAudioControl {
 		start = timelineObject.getStart();
 		if (pos >= 0) {
 			samplePlayer.start(pos);
+			LOG.info("length: "+samplePlayer.getSample().getLength());
 			running = true;
 			LOG.log(Level.INFO, "{0} started", timelineObject);
 		}
