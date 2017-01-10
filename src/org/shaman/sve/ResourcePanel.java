@@ -14,15 +14,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEditSupport;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.shaman.sve.model.AudioResource;
 import org.shaman.sve.model.Project;
 import org.shaman.sve.model.Resource;
+import org.shaman.sve.model.VideoResource;
+import org.shaman.sve.player.VideoTools;
 
 /**
  *
@@ -286,7 +290,57 @@ public class ResourcePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_addImageEvent
 
     private void addVideoEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addVideoEvent
-        // TODO add your handling code here:
+        JFileChooser fc = new JFileChooser(new File(Settings.get("RESOURCE_VIDEO", Settings.getLastDirectory().getAbsolutePath())));
+		FileFilter f = new FileNameExtensionFilter("video", "mp4", "mpg", "mpeg", "avi", "mkv");
+		fc.addChoosableFileFilter(f);
+		fc.setFileFilter(f);
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		int ret = fc.showOpenDialog(this);
+		if (ret == JFileChooser.APPROVE_OPTION) {
+			Settings.set("RESOURCE_VIDEO", fc.getCurrentDirectory().getAbsolutePath());
+			final File videoFile = fc.getSelectedFile();
+			final String baseName = FilenameUtils.getBaseName(videoFile.getName());
+			
+			//copy file to resource folder
+			File resourceFolder = new File(project.getFolder(), RESOURCE_FOLDER);
+			if (!resourceFolder.exists()) resourceFolder.mkdir();
+			File videoFolder = new File(resourceFolder, VIDEO_FOLDER);
+			if (!videoFolder.exists()) videoFolder.mkdir();
+			
+			try {
+				VideoTools.copyVideoIntoProject(videoFile, videoFolder, baseName, project.getFramerate());
+			} catch (IOException | InterruptedException ex) {
+				Logger.getLogger(ResourcePanel.class.getName()).log(Level.SEVERE, null, ex);
+				return;
+			}
+			
+			//create resource
+			final VideoResource res = new VideoResource(RESOURCE_FOLDER + "/" + VIDEO_FOLDER + "/" + baseName);
+			res.setFramerate(project.getFramerate());
+			project.getResources().add(res);
+			player.loadResource(res);
+			listModel.addElement(res);
+			LOG.info("video file copied and resource added");
+			//add undo support
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					project.getResources().remove(res);
+					listModel.removeElement(res);
+					LOG.info("undo: add video");
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					project.getResources().add(res);
+					listModel.addElement(res);
+					LOG.info("redo: add video");
+				}
+			
+			});
+		}
     }//GEN-LAST:event_addVideoEvent
 
     private void bluescreenEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bluescreenEvent

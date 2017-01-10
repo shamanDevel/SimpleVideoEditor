@@ -75,8 +75,8 @@ public class VideoResource implements Resource {
 			}
 			loader.setMessage("video frames loaded");
 			
-			LOG.log(Level.INFO, "video loaded, audio length: {0}, video length: {1}", 
-					new Object[]{audio.getLength()*1000, numFrames / (float)framerate});
+			LOG.log(Level.INFO, "video loaded, audio length: {0}, video length: {1} seconds", 
+					new Object[]{audio.getLength()/1000, numFrames / (float)framerate});
 		} catch (IOException ex) {
 			LOG.log(Level.SEVERE, "unable to load video "+name, ex);
 		}

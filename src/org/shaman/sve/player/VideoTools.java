@@ -6,17 +6,21 @@
 package org.shaman.sve.player;
 
 import java.awt.Component;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import net.beadsproject.beads.data.Sample;
+import org.apache.commons.io.IOUtils;
 import org.shaman.sve.Settings;
 
 /**
@@ -31,6 +35,7 @@ public class VideoTools {
 	public static final String AUDIO_SUFFIX = ".mp3";
 	public static final String IMAGES_SUFFIX = ".zip";
 	public static final String THUMBNAILS_SUFFIX = "_thumbs.zip";
+	public static final int MAX_THUMBNAIL_SIZE = 200;
 	
 	private final String basePath;
 	private ZipFile imagesZip;
@@ -109,5 +114,85 @@ public class VideoTools {
 		try (InputStream in = imagesZip.getInputStream(imagesZip.getEntry(frame+".png"))) {
 			return ImageIO.read(in);
 		}
+	}
+	
+	private static BufferedImage scaleImage(BufferedImage img) {
+		int maxS = Math.max(img.getWidth(), img.getHeight());
+		if (maxS <= MAX_THUMBNAIL_SIZE) {
+			return img;
+		}
+		float scale = MAX_THUMBNAIL_SIZE / (float) maxS;
+		int newWidth = (int) (img.getWidth() * scale);
+		int newHeight = (int) (img.getHeight()* scale);
+		BufferedImage resized = new BufferedImage(newWidth, newHeight, img.getType());
+		Graphics2D g = resized.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+			RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(img, 0, 0, newWidth, newHeight, 0, 0, img.getWidth(),
+			img.getHeight(), null);
+		g.dispose();
+		return resized;
+	}
+	
+	public static void copyVideoIntoProject(File videoFile, File directory, String baseName, int framerate) throws IOException, InterruptedException {
+		String root = directory.getAbsolutePath() + File.separator + baseName;
+		//call ffmpeg to extract frames
+		String[] args = {
+			FFMPEG_FILE.getAbsolutePath(),
+			"-i", videoFile.getAbsolutePath(),
+			"-r", String.valueOf(framerate),
+			"-n",
+			root + "%d.png"
+		};
+		ProcessBuilder pb = new ProcessBuilder(args).inheritIO();
+		LOG.info("start ffmpeg: "+pb.command());
+		Process p = pb.start();
+		int exit = p.waitFor();
+		if (exit != 0) {
+			throw new IOException("ffmpeg terminated with a failure");
+		}
+		LOG.info("frames extracted");
+		
+		//write files into zip files
+		try (ZipOutputStream zipHigh = new ZipOutputStream(new FileOutputStream(new File(root+IMAGES_SUFFIX)));
+			 ZipOutputStream zipLow = new ZipOutputStream(new FileOutputStream(new File(root+THUMBNAILS_SUFFIX)))) {
+			for (int i=1; ;++i) {
+				File image = new File(root+i+".png");
+				if (!image.exists()) {
+					break;
+				}
+				//copy to high res file
+				ZipEntry entry = new ZipEntry((i-1)+".png");
+				zipHigh.putNextEntry(entry);
+				try (InputStream in = new FileInputStream(image)) {
+					IOUtils.copy(in, zipHigh);
+				}
+				//read image
+				BufferedImage img = ImageIO.read(image);
+				img = scaleImage(img);
+				//write it
+				zipLow.putNextEntry(entry);
+				ImageIO.write(img, "png", zipLow);
+				//delete image
+				image.delete();
+			}		
+		}
+		LOG.info("frames compressed and written to zip file");
+		
+		//call ffmpeg to extract audio
+		args = new String[]{
+			FFMPEG_FILE.getAbsolutePath(),
+			"-i", videoFile.getAbsolutePath(),
+			"-n",
+			root + AUDIO_SUFFIX
+		};
+		pb = new ProcessBuilder(args).inheritIO();
+		LOG.info("start ffmpeg: "+pb.command());
+		p = pb.start();
+		exit = p.waitFor();
+		if (exit != 0) {
+			throw new IOException("ffmpeg terminated with a failure");
+		}
+		LOG.info("audio extracted");
 	}
 }
