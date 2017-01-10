@@ -26,7 +26,7 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 	private UndoableEditSupport undoSupport;
 	private Selections selections;
 	
-	private int currentTime;
+	private FrameTime currentTime;
 	
 	/**
 	 * Creates new form MainPanel
@@ -38,6 +38,7 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 	public void setProject(Project project) {
 		this.project = project;
 		project.addPropertyChangeListener(this);
+		currentTime = new FrameTime(project.getFramerate());
 	}
 	
 	public void setUndoSupport(UndoableEditSupport undoSupport) {
@@ -62,21 +63,20 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 	/**
 	 * Sets the total time in the UI
 	 */
-	private void setTotalTime(int msec) {
+	private void setTotalTime(FrameTime msec) {
 		LOG.log(Level.INFO, "set total time to {0} ms", msec);
 		//check current time
 		boolean fireTimeChange = false;
-		if (currentTime > msec) {
-			currentTime = 0;
+		if (currentTime.compareTo(msec) > 0) {
+			currentTime.fromMillis(0);
 			fireTimeChange = true;
 		}
 		
-		msec = msec / 10 * 10; //round to 10msec
-		timeLabel.setText(String.format("/ %,d ms", msec));
-		timeSpinner.setModel(new SpinnerNumberModel((int) currentTime, (int) 0, (int) msec, (int) 1));
+		timeLabel.setText("/ "+msec+" s");
+		timeSpinner.setModel(currentTime.getSpinnerModel(new FrameTime(project.getFramerate()).fromMillis(0), msec));
 		timeSlider.setMinimum(0);
-		timeSlider.setMaximum(msec);
-		timeSlider.setValue(currentTime);
+		timeSlider.setMaximum(msec.toMillis());
+		timeSlider.setValue(currentTime.toMillis());
 		
 		if (fireTimeChange) {
 			changeCurrentTime(currentTime);
@@ -86,26 +86,24 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 	/**
 	 * Sets the current time in the UI
 	 */
-	private void setCurrentTime(int msec) {
-		System.out.println(msec / 1000.0);
-		msec = msec / 100 * 100; //round to 100msec for efficency
+	private void setCurrentTime(FrameTime msec) {
 		if (msec == currentTime) return;
 		currentTime = msec;
 		timeSpinner.setValue(msec);
-		timeSlider.setValue(msec);
+		timeSlider.setValue(msec.toMillis());
 //		LOG.log(Level.INFO, "set current time to {0} ms", msec);
 	}
 	
 	/**
 	 * Sends the current time to the player
-	 * @param msec 
+	 * @param time 
 	 */
-	private void changeCurrentTime(int msec) {
-		project.setTime(msec);
+	private void changeCurrentTime(FrameTime time) {
+		project.setTime(time);
 		if (player != null) {
-			player.setTime(msec);
+			player.setTime(time);
 		}
-		LOG.log(Level.INFO, "change current time to {0} ms", msec);
+		LOG.log(Level.INFO, "change current time to {0} ms", time);
 	}
 	
 	/**
@@ -216,26 +214,30 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
     private void stopEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopEvent
         if (player.isPlaying()) {
 			player.stop();
-		} else if (currentTime != 0) {
-			setCurrentTime(0);
-			changeCurrentTime(0);
+		} else if (currentTime.toMillis() != 0) {
+			FrameTime ft = new FrameTime(project.getFramerate());
+			setCurrentTime(ft);
+			changeCurrentTime(ft);
 		}
     }//GEN-LAST:event_stopEvent
 
     private void timeSpinnerChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_timeSpinnerChanged
-        int msec = (int) timeSpinner.getValue();
-		if (msec == currentTime) return;
-		currentTime = msec;
-		timeSlider.setValue(msec);
-		changeCurrentTime(msec);
+        FrameTime ft = (FrameTime) timeSpinner.getValue();
+		if (ft.equals(currentTime)) {
+			return;
+		}
+		currentTime = ft;
+		timeSlider.setValue(ft.toMillis());
+		changeCurrentTime(ft);
     }//GEN-LAST:event_timeSpinnerChanged
 
     private void timeSliderChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_timeSliderChanged
         int msec = timeSlider.getValue();
-		if (msec == currentTime) return;
-		currentTime = msec;
-		timeSpinner.setValue(msec);
-		changeCurrentTime(msec);
+		FrameTime ft = new FrameTime(project.getFramerate()).fromMillis(msec);
+		if (ft.equals(currentTime)) return;
+		currentTime = ft;
+		timeSpinner.setValue(ft);
+		changeCurrentTime(ft);
     }//GEN-LAST:event_timeSliderChanged
 
 

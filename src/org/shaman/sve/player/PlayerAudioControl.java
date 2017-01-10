@@ -39,8 +39,11 @@ public class PlayerAudioControl {
 		Resource res = timelineObject.getResource();
 		if (res instanceof AudioResource) {
 			sample = ((AudioResource) res).getSample();
-		} 
-		//TODO: video
+		} else if (res instanceof VideoResource) {
+			sample = ((VideoResource) res).getSample();
+		} else {
+			throw new IllegalArgumentException("unknown resource: "+res);
+		}
 		
 		samplePlayer = new SamplePlayer(player.getAudioContext(), sample);
 		samplePlayer.setKillOnEnd(false);

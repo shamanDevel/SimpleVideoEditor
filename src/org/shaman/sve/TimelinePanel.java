@@ -294,9 +294,9 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		public Component getTableCellRendererComponent(JTable table, Object obj, boolean isSelected, boolean hasFocus, int row, int column) {
 			start = 0;
 			duration = 0;
-			length = project.getLength();
+			length = (project.getLength()==null) ? 0 : project.getLength().toMillis();
 			color = Color.BLACK;
-			time = project.getTime();
+			time = (project.getTime()==null) ? 0 : project.getTime().toMillis();
 			
 			if (obj instanceof ResourceTimelineObject) {
 				@SuppressWarnings("unchecked")

@@ -32,12 +32,16 @@ public final class FrameTime implements Comparable<FrameTime>, Cloneable {
 	
 	private int framesPerSecond;
 
+	@Deprecated //Marker, this constructor should only be used by the serializer
 	public FrameTime() {
 	}
 	public FrameTime(FrameTime toClone) {
 		seconds = toClone.seconds;
 		frame = toClone.frame;
 		framesPerSecond = toClone.framesPerSecond;
+	}
+	public FrameTime(int framesPerSecond) {
+		this.framesPerSecond = framesPerSecond;
 	}
 
 	public int getSeconds() {
@@ -102,10 +106,11 @@ public final class FrameTime implements Comparable<FrameTime>, Cloneable {
 	 * as specified by the milliseconds from the beginning.
 	 * @param millis 
 	 */
-	public void fromMillis(int millis) {
+	public FrameTime fromMillis(int millis) {
 		seconds = millis / 1000;
 		frame = (millis % 1000) * framesPerSecond / 1000;
 		frame = Math.min(frame, framesPerSecond);
+		return this;
 	}
 	
 	public FrameTime incrementLocal() {
@@ -242,17 +247,33 @@ public final class FrameTime implements Comparable<FrameTime>, Cloneable {
 		return new SpinnerModel(this);
 	}
 	
+	public javax.swing.SpinnerModel getSpinnerModel(FrameTime min, FrameTime max) {
+		return new SpinnerModel(this, min, max);
+	}
+	
 	private static class SpinnerModel extends javax.swing.AbstractSpinnerModel {
 
 		private FrameTime time;
+		private final FrameTime min;
+		private final FrameTime max;
 		
 		public SpinnerModel() {
+			min = null;
+			max = null;
 		}
 
 		public SpinnerModel(FrameTime time) {
 			this.time = time;
+			min = null;
+			max = null;
 		}
 
+		public SpinnerModel(FrameTime time, FrameTime min, FrameTime max) {
+			this.time = time;
+			this.min = min;
+			this.max = max;
+		}
+	
 		@Override
 		public Object getValue() {
 			return time;
@@ -260,18 +281,22 @@ public final class FrameTime implements Comparable<FrameTime>, Cloneable {
 
 		@Override
 		public void setValue(Object value) {
+			if (!(value instanceof FrameTime)) return;
 			time = (FrameTime) value;
+			fireStateChanged();
 		}
 
 		@Override
 		public Object getNextValue() {
 			time.incrementLocal();
+			fireStateChanged();
 			return time;
 		}
 
 		@Override
 		public Object getPreviousValue() {
 			time.decrementLocal();
+			fireStateChanged();
 			return time;
 		}
 		

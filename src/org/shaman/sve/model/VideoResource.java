@@ -112,4 +112,8 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 			}
 		}
 	}
+
+	public Sample getSample() {
+		return audio;
+	}
 }

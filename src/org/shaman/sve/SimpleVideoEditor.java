@@ -272,6 +272,8 @@ public class SimpleVideoEditor extends JFrame {
 	 */
 	private void projectLoaded() {
 		setTitle(project.getFolder().getAbsolutePath());
+		project.setTime(new FrameTime(project.getFramerate()));
+		
 		resourcePanel.setProject(project);
 		timelinePanel.setProject(project);
 		mainPanel.setProject(project);

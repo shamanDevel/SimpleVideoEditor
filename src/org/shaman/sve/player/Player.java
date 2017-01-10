@@ -18,6 +18,7 @@ import net.beadsproject.beads.core.Bead;
 import net.beadsproject.beads.core.UGen;
 import net.beadsproject.beads.ugens.Clock;
 import net.beadsproject.beads.ugens.Gain;
+import org.shaman.sve.FrameTime;
 import org.shaman.sve.model.*;
 
 /**
@@ -41,7 +42,7 @@ public class Player {
 	private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
 	private boolean playing;
-	private int time;
+	private FrameTime time;
 	private ClockBead clockBead;
 	private ArrayList<PlayerAudioControl> audioControls = new ArrayList<>();
 
@@ -82,7 +83,7 @@ public class Player {
 	 * Sets the selected time of playback in msec.
 	 * @param msec 
 	 */
-	public void setTime(int msec) {
+	public void setTime(FrameTime msec) {
 		time = msec;
 	}
 	
@@ -103,12 +104,12 @@ public class Player {
 			//todo: check if deactivated
 			PlayerAudioControl pac = (PlayerAudioControl) obj.playerProperties.get(AUDIO_CONTROL);
 			if (pac != null) {
-				pac.setTime(time);
+				pac.setTime(time.toMillis());
 				pac.start();
 				audioControls.add(pac);
 			}
 		}
-		clockBead.start(time);
+		clockBead.start(time.toMillis());
 		playing = true;
 		propertyChangeSupport.firePropertyChange(PROP_PLAYING, false, true);
 	}
@@ -154,7 +155,7 @@ public class Player {
 			@SuppressWarnings("unchecked")
 			ResourceTimelineObject<Resource> obj = (ResourceTimelineObject<Resource>) to;
 			Resource res = obj.getResource();
-			if (res instanceof AudioResource) {
+			if ((res instanceof AudioResource) || (res instanceof VideoResource)) {
 				PlayerAudioControl pac = new PlayerAudioControl(obj, this);
 				obj.playerProperties.put(AUDIO_CONTROL, pac);
 			}
@@ -169,7 +170,7 @@ public class Player {
 		for (PlayerAudioControl pac : audioControls) {
 			pac.updateAudio(msec);
 		}
-		project.setTime(msec);
+//		project.setTime(msec);
 	}
 	
 	/**
@@ -184,7 +185,7 @@ public class Player {
 			}
 		}
 		LOG.log(Level.INFO, "length of the project: {0} msec", length);
-		project.setLength(length);
+		project.setLength(new FrameTime(project.getFramerate()).fromMillis(length));
 	}
 	
 	private class ResourceLoaderImpl implements Resource.ResourceLoader {

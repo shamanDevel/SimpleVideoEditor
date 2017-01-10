@@ -10,6 +10,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
+import org.shaman.sve.FrameTime;
 import org.simpleframework.xml.*;
 
 /**
@@ -45,9 +46,9 @@ public class Project {
 	public static final String PROP_BACKGROUNDCOLOR = "backgroundColor";
 	
 	//not persistent
-	private int time;
+	private FrameTime time;
 	public static final String PROP_TIME = "time";
-	private int length;
+	private FrameTime length;
 	public static final String PROP_LENGTH = "length";
 	public static final String PROP_TIMELINE_OBJECT_CHANGED = "tloChanged";
 	public static final String PROP_TIMELINE_OBJECTS_CHANGED = "tloxChanged";
@@ -184,7 +185,7 @@ public class Project {
 	 *
 	 * @return the value of time
 	 */
-	public int getTime() {
+	public FrameTime getTime() {
 		return time;
 	}
 
@@ -193,8 +194,8 @@ public class Project {
 	 *
 	 * @param time new value of time
 	 */
-	public void setTime(int time) {
-		int oldTime = this.time;
+	public void setTime(FrameTime time) {
+		FrameTime oldTime = this.time;
 		this.time = time;
 		propertyChangeSupport.firePropertyChange(PROP_TIME, oldTime, time);
 	}
@@ -202,7 +203,7 @@ public class Project {
 	/**
 	 * @return the total length of the project in msec.
 	 */
-	public int getLength() {
+	public FrameTime getLength() {
 		return length;
 	}
 
@@ -210,8 +211,8 @@ public class Project {
 	 * Sets the total length of the project in msec.
 	 * @param length new value of length
 	 */
-	public void setLength(int length) {
-		int oldLength = this.length;
+	public void setLength(FrameTime length) {
+		FrameTime oldLength = this.length;
 		this.length = length;
 		propertyChangeSupport.firePropertyChange(PROP_LENGTH, oldLength, length);
 	}
