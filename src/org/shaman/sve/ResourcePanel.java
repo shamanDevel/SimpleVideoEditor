@@ -228,7 +228,7 @@ public class ResourcePanel extends javax.swing.JPanel {
         //load file
 		JFileChooser fc = new JFileChooser(new File(Settings.get("RESOURCE_AUDIO", Settings.getLastDirectory().getAbsolutePath())));
 		fc.setAcceptAllFileFilterUsed(false);
-		fc.setFileFilter(new FileNameExtensionFilter("audio", "mp3", "wav", "ogg"));
+		fc.setFileFilter(new FileNameExtensionFilter("audio", "mp3", "wav"));
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		int ret = fc.showOpenDialog(this);
 		if (ret == JFileChooser.APPROVE_OPTION) {

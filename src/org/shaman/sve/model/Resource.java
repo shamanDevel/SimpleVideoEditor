@@ -5,6 +5,7 @@
  */
 package org.shaman.sve.model;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import net.beadsproject.beads.core.AudioContext;
 
@@ -24,5 +25,16 @@ public interface Resource {
 		File getProjectDirectory();
 		void setMessage(String message);
 		AudioContext getAudioContext();
+	}
+	
+	public static interface ImageProvider {
+		/**
+		 * Retrieves the frame with the specified index from the beginning
+		 * of the resource
+		 * @param index the frame index
+		 * @param thumbnail {@code true} if only a preview thumbnail should be returned
+		 * @return the frame
+		 */
+		BufferedImage getFrame(int index, boolean thumbnail);
 	}
 }

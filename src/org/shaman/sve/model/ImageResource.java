@@ -6,6 +6,11 @@
 package org.shaman.sve.model;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import org.simpleframework.xml.Element;
 
 /**
@@ -39,12 +44,28 @@ public class ImageResource implements Resource{
 	
 	@Override
 	public void load(ResourceLoader loader) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		if (isLoaded()) {
+			return;
+		}
+		try {
+			//load sample
+			loader.setMessage("load "+name);
+			String path = loader.getProjectDirectory().getAbsolutePath()+"\\"+name;
+			image = ImageIO.read(new File(path));
+			loader.setMessage("loaded");
+		} catch (IOException ex) {
+			Logger.getLogger(AudioResource.class.getName()).log(Level.SEVERE, null, ex);
+			loader.setMessage(ex.getMessage());
+		}
 	}
 
 	@Override
 	public boolean isLoaded() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return image != null;
+	}
+
+	public BufferedImage getImage() {
+		return image;
 	}
 	
 	@Override

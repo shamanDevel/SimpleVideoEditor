@@ -6,21 +6,29 @@
 package org.shaman.sve.model;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import net.beadsproject.beads.data.Sample;
+import org.shaman.sve.player.VideoTools;
 import org.simpleframework.xml.Element;
 
 /**
  *
  * @author Sebastian Weiss
  */
-public class VideoResource implements Resource{
+public class VideoResource implements Resource {
+	private static final Logger LOG = Logger.getLogger(VideoResource.class.getName());
 
 	@Element
 	private String name;
 	@Element
 	private int framerate;
 
-	private AudioResource audio;
+	private VideoTools videoTools;
+	private Sample audio;
 	private BufferedImage[] thumbnails;
+	private int numFrames;
 	
 	public VideoResource() {
 	}
@@ -39,14 +47,44 @@ public class VideoResource implements Resource{
 		this.name = name;
 	}
 
+	public void setFramerate(int framerate) {
+		this.framerate = framerate;
+	}
+
+	public int getFramerate() {
+		return framerate;
+	}
+
 	@Override
 	public void load(ResourceLoader loader) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		try {
+			//path
+			loader.setMessage("load video "+name);
+			String basePath = loader.getProjectDirectory().getAbsolutePath()+"\\"+name;
+			videoTools = new VideoTools(basePath);
+			
+			//1. load audio
+			audio = videoTools.loadAudio();
+			loader.setMessage("audio loaded");
+			
+			//2. load thumbnails
+			numFrames = videoTools.getFrameCount();
+			thumbnails = new BufferedImage[numFrames];
+			for (int i=0; i<numFrames; ++i) {
+				thumbnails[i] = videoTools.getThumbnail(i);
+			}
+			loader.setMessage("video frames loaded");
+			
+			LOG.log(Level.INFO, "video loaded, audio length: {0}, video length: {1}", 
+					new Object[]{audio.getLength()*1000, numFrames / (float)framerate});
+		} catch (IOException ex) {
+			LOG.log(Level.SEVERE, "unable to load video "+name, ex);
+		}
 	}
 
 	@Override
 	public boolean isLoaded() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		return thumbnails != null;
 	}
 	
 	@Override

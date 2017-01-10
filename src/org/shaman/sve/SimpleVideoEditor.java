@@ -24,6 +24,7 @@ import javax.swing.undo.UndoableEditSupport;
 import org.jdesktop.swingx.JXMultiSplitPane;
 import org.jdesktop.swingx.MultiSplitLayout;
 import org.shaman.sve.model.Project;
+import org.shaman.sve.player.VideoTools;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
@@ -334,6 +335,7 @@ public class SimpleVideoEditor extends JFrame {
 		sve.pack();
 		sve.setVisible(true);
 		sve.setLocationRelativeTo(null);
+		VideoTools.checkFfmpeg(sve);
 		
 		sve.loadProject(new File("C:\\Users\\Sebastian\\Documents\\Java\\SimpleVideoEditorProjects\\Project1"));
 	}
