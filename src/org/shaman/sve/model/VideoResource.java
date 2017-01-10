@@ -17,7 +17,7 @@ import org.simpleframework.xml.Element;
  *
  * @author Sebastian Weiss
  */
-public class VideoResource implements Resource {
+public class VideoResource implements Resource, Resource.ImageProvider {
 	private static final Logger LOG = Logger.getLogger(VideoResource.class.getName());
 
 	@Element
@@ -29,6 +29,7 @@ public class VideoResource implements Resource {
 	private Sample audio;
 	private BufferedImage[] thumbnails;
 	private int numFrames;
+	private int duration;
 	
 	public VideoResource() {
 	}
@@ -77,6 +78,7 @@ public class VideoResource implements Resource {
 			
 			LOG.log(Level.INFO, "video loaded, audio length: {0}, video length: {1} seconds", 
 					new Object[]{audio.getLength()/1000, numFrames / (float)framerate});
+			duration = (int) Math.max(audio.getLength(), numFrames / (float)framerate);
 		} catch (IOException ex) {
 			LOG.log(Level.SEVERE, "unable to load video "+name, ex);
 		}
@@ -87,8 +89,27 @@ public class VideoResource implements Resource {
 		return thumbnails != null;
 	}
 	
+	public int getDurationInMsec() {
+		return duration;
+	}
+	
 	@Override
 	public String toString() {
 		return getName();
+	}
+
+	@Override
+	public BufferedImage getFrame(int index, boolean thumbnail) {
+		if (thumbnail) {
+			return thumbnails[Math.min(index, numFrames-1)];
+		} else {
+			try {
+				return videoTools.getFullResImage(Math.min(index, numFrames-1));
+			} catch (IOException ex) {
+				Logger.getLogger(VideoResource.class.getName()).log(Level.SEVERE, 
+						"unable to load high res frame with index "+index, ex);
+				return null;
+			}
+		}
 	}
 }

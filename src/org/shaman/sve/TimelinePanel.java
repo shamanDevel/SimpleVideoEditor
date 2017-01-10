@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
@@ -257,8 +258,23 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 	private void addResource(Resource res) {
 		TimelineObject obj = null;
 		if (res instanceof AudioResource) {
-			obj = new AudioTimelineObject((AudioResource) res);
-		} 
+			AudioTimelineObject o = new AudioTimelineObject((AudioResource) res);
+			o.setDuration((int)Math.ceil(((AudioResource)res).getSample().getLength()));
+		} else if (res instanceof Resource.ImageProvider) {
+			ImageTimelineObject o = new ImageTimelineObject(res);
+			BufferedImage i = ((Resource.ImageProvider) res).getFrame(0, false);
+			o.setWidth(i.getWidth());
+			o.setHeight(i.getHeight());
+			if (res instanceof VideoResource) {
+				o.setDuration(((VideoResource) res).getDurationInMsec());
+			} else { //image
+				o.setDuration(1000); //1sec
+			}
+			obj = o;
+		} else {
+			LOG.log(Level.WARNING, "unknown resource type: {0}", res);
+			return;
+		}
 		//TODO: video + image
 		addTimelineObject(obj);
 	}

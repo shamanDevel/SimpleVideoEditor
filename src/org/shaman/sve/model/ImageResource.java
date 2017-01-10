@@ -17,7 +17,7 @@ import org.simpleframework.xml.Element;
  *
  * @author Sebastian Weiss
  */
-public class ImageResource implements Resource{
+public class ImageResource implements Resource, Resource.ImageProvider {
 	
 	@Element
 	private String name;
@@ -71,6 +71,11 @@ public class ImageResource implements Resource{
 	@Override
 	public String toString() {
 		return getName();
+	}
+
+	@Override
+	public BufferedImage getFrame(int index, boolean thumbnail) {
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 }

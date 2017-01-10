@@ -161,18 +161,19 @@ public class VideoTools {
 				if (!image.exists()) {
 					break;
 				}
-				//copy to high res file
-				ZipEntry entry = new ZipEntry((i-1)+".png");
-				zipHigh.putNextEntry(entry);
-				try (InputStream in = new FileInputStream(image)) {
-					IOUtils.copy(in, zipHigh);
-				}
 				//read image
 				BufferedImage img = ImageIO.read(image);
+				//write high res
+				zipHigh.putNextEntry(new ZipEntry((i-1)+".png"));
+				ImageIO.write(img, "png", zipHigh);
+				zipHigh.flush();
+				zipHigh.closeEntry();
+				//write thumbnail
 				img = scaleImage(img);
-				//write it
-				zipLow.putNextEntry(entry);
+				zipLow.putNextEntry(new ZipEntry((i-1)+".png"));
 				ImageIO.write(img, "png", zipLow);
+				zipLow.flush();
+				zipLow.closeEntry();
 				//delete image
 				image.delete();
 			}		
