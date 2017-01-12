@@ -55,6 +55,7 @@ public class ImageResource implements Resource, Resource.ImageProvider {
 			loader.setMessage(name+":\nloading");
 			String path = loader.getProjectDirectory().getAbsolutePath()+"\\"+name;
 			image = ImageIO.read(new File(path));
+			image = VideoTools.ensureFormat(image, BufferedImage.TYPE_INT_ARGB);
 			thumbnailScale = VideoTools.getThumbnailScale(image);
 			thumbnail = VideoTools.scaleImage(image, thumbnailScale);
 			loader.setMessage(name+":\nloaded");

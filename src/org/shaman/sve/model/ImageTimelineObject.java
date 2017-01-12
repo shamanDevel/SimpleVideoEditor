@@ -5,13 +5,11 @@
  */
 package org.shaman.sve.model;
 
-import com.sun.org.apache.xalan.internal.utils.Objects;
+import java.util.Objects;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import org.simpleframework.xml.Element;
-
-import static org.shaman.sve.model.ResourceTimelineObject.PROP_RESOURCE;
 
 /**
  * Timeline object for both images and videos

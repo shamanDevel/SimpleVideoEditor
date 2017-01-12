@@ -9,8 +9,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.logging.Logger;
 import org.shaman.sve.FrameTime;
+import org.shaman.sve.filters.AbstractImageFilter;
 import org.shaman.sve.model.ImageTimelineObject;
 import org.shaman.sve.model.Resource;
+import org.shaman.sve.model.TimelineObject;
 
 /**
  *
@@ -38,7 +40,13 @@ public class PlayerImageControl {
 		int frame = ft.toFrames() - start.toFrames();
 		
 		BufferedImage img = ((Resource.ImageProvider) timelineObject.getResource()).getFrame(frame, thumbnail);
-		//TODO: call filters
+		float thumbnailScale = ((Resource.ImageProvider) timelineObject.getResource()).getThumbnailScale();
+		//call filters
+		for (TimelineObject child : timelineObject.getChildren()) {
+			if (child instanceof AbstractImageFilter) {
+				img = ((AbstractImageFilter) child).process(img, ft, thumbnail, thumbnailScale);
+			}
+		}
 		
 		return img;
 	}

@@ -5,10 +5,7 @@
  */
 package org.shaman.sve.player;
 
-import java.awt.Component;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.logging.Level;
@@ -136,6 +133,18 @@ public class VideoTools {
 			img.getHeight(), null);
 		g.dispose();
 		return resized;
+	}
+	
+	public static BufferedImage ensureFormat(BufferedImage img, int format) {
+		if (img.getType() == format) {
+			return img;
+		} else {
+			BufferedImage i = new BufferedImage(img.getWidth(), img.getHeight(), format);
+			Graphics g = i.getGraphics();
+			g.drawImage(img, 0, 0, null);
+			g.dispose();
+			return i;
+		}
 	}
 	
 	public static void copyVideoIntoProject(File videoFile, File directory, String baseName, int framerate) throws IOException, InterruptedException {

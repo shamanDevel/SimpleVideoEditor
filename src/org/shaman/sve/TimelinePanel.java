@@ -5,20 +5,19 @@
  */
 package org.shaman.sve;
 
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.shaman.sve.player.Player;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -33,6 +32,8 @@ import javax.swing.undo.UndoableEditSupport;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
+import org.openide.util.Lookup;
+import org.shaman.sve.filters.FilterFactory;
 import org.shaman.sve.model.*;
 
 /**
@@ -66,6 +67,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 				timelineObjectSelected(tse.getNewLeadSelectionPath());
 			}
 		});
+		table.addMouseListener(new TableMouseListener(table));
 		timelinePanel.setLayout(new BorderLayout());
 		timelinePanel.add(new JScrollPane(table));
 		timelinePanel.setPreferredSize(new Dimension(400, 158));
@@ -197,14 +199,19 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		public Object getChild(Object parent, int index) {
 			if (parent == root && project != null) {
 				return project.getTimelineObjects().get(index);
+			} else if (parent instanceof TimelineObject) {
+				return ((TimelineObject) parent).getChildren().get(index);
+			} else {
+				return null;
 			}
-			return null;
 		}
 
 		@Override
 		public int getChildCount(Object parent) {
 			if (parent == root && project != null) {
 				return project.getTimelineObjects().size();
+			} else if (parent instanceof TimelineObject) {
+				return ((TimelineObject) parent).getChildren().size();
 			}
 			return 0;
 		}
@@ -213,6 +220,8 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		public int getIndexOfChild(Object parent, Object child) {
 			if (parent == root && project != null) {
 				return project.getTimelineObjects().indexOf(child);
+			} else if (parent instanceof TimelineObject) {
+				return ((TimelineObject) parent).getChildren().indexOf(child);
 			}
 			return -1;
 		}
@@ -265,7 +274,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 			if (res instanceof VideoResource) {
 				o.setDuration(((VideoResource) res).getDurationInMsec());
 			} else { //image
-				o.setDuration(1000); //1sec
+				o.setDuration(10000); //10sec
 			}
 			obj = o;
 		} else {
@@ -307,6 +316,11 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 				} else { //video
 					color = Color.GREEN;
 				}
+			} else if (obj instanceof TimelineObject) {
+				//filter
+				start = ((TimelineObject) obj).getGlobalStart();
+				duration = ((TimelineObject) obj).getGlobalDuration();
+				color = Color.GRAY;
 			}
 			
 			if (isSelected) {
@@ -340,6 +354,85 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 
 	}
 	
+	private void addFilter(final ResourceTimelineObject<Resource> obj, FilterFactory factory) {
+		final TimelineObject child = factory.createFilter(obj);
+		obj.addChild(child);
+		tableModel.fireUpdate();
+		LOG.log(Level.INFO, "filter {0} added to {1}", new Object[]{child, obj});
+		undoSupport.postEdit(new AbstractUndoableEdit(){
+
+			@Override
+			public void undo() throws CannotUndoException {
+				super.undo();
+				obj.removeChild(child);
+				tableModel.fireUpdate();
+			}
+
+			@Override
+			public void redo() throws CannotRedoException {
+				super.redo();
+				obj.addChild(child);
+				tableModel.fireUpdate();
+			}
+		});
+	}
+	
+	private void triggerPopup(TimelineObject tobj, Point mouse) {
+		LOG.info("trigger popup on "+tobj);
+		//until now, filters can only be applied to resources
+		if (!(tobj instanceof ResourceTimelineObject)) return;
+		@SuppressWarnings("unchecked")
+		final ResourceTimelineObject<Resource> obj = (ResourceTimelineObject<Resource>) tobj;
+		//test which filters can be applied
+		ArrayList<FilterFactory> factories = new ArrayList<>();
+		for (FilterFactory f : Lookup.getDefault().lookupAll(FilterFactory.class)) {
+			if (f.isApplicable(obj)) {
+				factories.add(f);
+			}
+		}
+		Collections.sort(factories, new Comparator<FilterFactory>() {
+			@Override
+			public int compare(FilterFactory o1, FilterFactory o2) {
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+		//build menu
+		JPopupMenu popup = new JPopupMenu();
+		Map<String, JMenu> items = new HashMap<>();
+		for (final FilterFactory f : factories) {
+			JMenu parent = null;
+			int index = 0;
+			while (index != -1) {
+				index = f.getName().indexOf('/', index);
+				if (index != -1) {
+					String prefix = f.getName().substring(0, index);
+					index++;
+					JMenu item = items.get(prefix);
+					if (item == null) {
+						item = new JMenu(prefix.substring(prefix.lastIndexOf('/')+1));
+						items.put(prefix, item);
+						if (parent != null) {
+							parent.add(item);
+						} else {
+							popup.add(item);
+						}
+					}
+					parent = item;
+				}
+			}
+			String name = f.getName().substring(f.getName().lastIndexOf('/')+1);
+			JMenuItem item = new JMenuItem(name);
+			parent.add(item);
+			item.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					addFilter(obj, f);
+				}
+			});
+		}
+		popup.show(table, mouse.x, mouse.y);
+	}
+
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always
@@ -535,6 +628,29 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		removeButton.setEnabled(selections.getSelectedTimelineObject() != null);
 		upButton.setEnabled(selections.getSelectedTimelineObject() != null);
 		downButton.setEnabled(selections.getSelectedTimelineObject() != null);
+	}
+	
+	public class TableMouseListener extends MouseAdapter {
+
+		private JTable table;
+
+		public TableMouseListener(JTable table) {
+			this.table = table;
+		}
+
+		@Override
+		public void mousePressed(MouseEvent event) {
+			if (event.getButton() == MouseEvent.BUTTON3) {
+				// selects the row at which point the mouse is clicked
+				Point point = event.getPoint();
+				int currentRow = table.rowAtPoint(point);
+				table.setRowSelectionInterval(currentRow, currentRow);
+				//trigger popup
+				if (selections.getSelectedTimelineObject() != null) {
+					triggerPopup(selections.getSelectedTimelineObject(), event.getPoint());
+				}
+			}
+		}
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
