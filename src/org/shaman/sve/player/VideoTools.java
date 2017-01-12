@@ -116,12 +116,16 @@ public class VideoTools {
 		}
 	}
 	
-	private static BufferedImage scaleImage(BufferedImage img) {
+	public static float getThumbnailScale(BufferedImage img) {
 		int maxS = Math.max(img.getWidth(), img.getHeight());
 		if (maxS <= MAX_THUMBNAIL_SIZE) {
-			return img;
+			return 1;
 		}
 		float scale = MAX_THUMBNAIL_SIZE / (float) maxS;
+		return scale;
+	}
+	
+	public static BufferedImage scaleImage(BufferedImage img, float scale) {
 		int newWidth = (int) (img.getWidth() * scale);
 		int newHeight = (int) (img.getHeight()* scale);
 		BufferedImage resized = new BufferedImage(newWidth, newHeight, img.getType());
@@ -169,7 +173,7 @@ public class VideoTools {
 				zipHigh.flush();
 				zipHigh.closeEntry();
 				//write thumbnail
-				img = scaleImage(img);
+				img = scaleImage(img, getThumbnailScale(img));
 				zipLow.putNextEntry(new ZipEntry((i-1)+".png"));
 				ImageIO.write(img, "png", zipLow);
 				zipLow.flush();

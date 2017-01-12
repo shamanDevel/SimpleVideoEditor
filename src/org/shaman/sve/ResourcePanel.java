@@ -318,7 +318,59 @@ public class ResourcePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_addAudioEvent
 
     private void addImageEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addImageEvent
-        // TODO add your handling code here:
+        //load file
+		JFileChooser fc = new JFileChooser(new File(Settings.get("RESOURCE_IMAGE", Settings.getLastDirectory().getAbsolutePath())));
+		fc.setAcceptAllFileFilterUsed(false);
+		fc.setFileFilter(new FileNameExtensionFilter("images", "bmp", "png", "gif", "jpg", "jpeg"));
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		int ret = fc.showOpenDialog(this);
+		if (ret == JFileChooser.APPROVE_OPTION) {
+			Settings.set("RESOURCE_IMAGE", fc.getCurrentDirectory().getAbsolutePath());
+			final File imageFile = fc.getSelectedFile();
+			//copy file to resource folder
+			File resourceFolder = new File(project.getFolder(), RESOURCE_FOLDER);
+			if (!resourceFolder.exists()) resourceFolder.mkdir();
+			File imageFolder = new File(resourceFolder, IMAGE_FOLDER);
+			if (!imageFile.exists()) imageFile.mkdir();
+			final File targetFile = new File(imageFolder, imageFile.getName());
+			try {
+				FileUtils.copyFile(imageFile, targetFile);
+			} catch (IOException ex) {
+				LOG.log(Level.SEVERE, null, ex);
+				return;
+			}
+			//create resource
+			final ImageResource res = new ImageResource(RESOURCE_FOLDER + "/" + IMAGE_FOLDER + "/" + imageFile.getName());
+			project.getResources().add(res);
+			listModel.addElement(res);
+			LOG.info("image file copied and resource added");
+			//add undo support
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					targetFile.delete();
+					project.removeResource(res);
+					listModel.removeElement(res);
+					LOG.info("undo: add audio");
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					try {
+						FileUtils.copyFile(imageFile, targetFile); //copy again
+					} catch (IOException ex) {
+						LOG.log(Level.SEVERE, null, ex);
+						return;
+					}
+					project.addResource(res);
+					listModel.addElement(res);
+					LOG.info("redo: add image");
+				}
+			
+			});
+		}
     }//GEN-LAST:event_addImageEvent
 
     private void addVideoEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addVideoEvent

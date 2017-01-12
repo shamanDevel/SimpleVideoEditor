@@ -73,7 +73,6 @@ public class ImageTimelineObject<T extends Resource & Resource.ImageProvider> ex
 				public void undo() throws CannotUndoException {
 					super.undo();
 					x = oldX;
-					name = resource.getName();
 					propertyChangeSupport.firePropertyChange(PROP_X, newX, oldX);
 				}
 
@@ -81,7 +80,6 @@ public class ImageTimelineObject<T extends Resource & Resource.ImageProvider> ex
 				public void redo() throws CannotRedoException {
 					super.redo();
 					x = newX;
-					name = resource.getName();
 					propertyChangeSupport.firePropertyChange(PROP_Y, oldX, newX);
 				}
 			
@@ -112,7 +110,6 @@ public class ImageTimelineObject<T extends Resource & Resource.ImageProvider> ex
 				public void undo() throws CannotUndoException {
 					super.undo();
 					y = oldY;
-					name = resource.getName();
 					propertyChangeSupport.firePropertyChange(PROP_Y, newY, oldY);
 				}
 
@@ -120,7 +117,6 @@ public class ImageTimelineObject<T extends Resource & Resource.ImageProvider> ex
 				public void redo() throws CannotRedoException {
 					super.redo();
 					y = newY;
-					name = resource.getName();
 					propertyChangeSupport.firePropertyChange(PROP_Y, oldY, newY);
 				}
 			

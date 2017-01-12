@@ -261,6 +261,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 			BufferedImage i = ((Resource.ImageProvider) res).getFrame(0, false);
 			o.setWidth(i.getWidth());
 			o.setHeight(i.getHeight());
+			o.setAspect(i.getWidth() / (float) i.getHeight());
 			if (res instanceof VideoResource) {
 				o.setDuration(((VideoResource) res).getDurationInMsec());
 			} else { //image

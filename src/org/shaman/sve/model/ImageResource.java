@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import org.shaman.sve.player.VideoTools;
 import org.simpleframework.xml.Element;
 
 /**
@@ -23,6 +24,8 @@ public class ImageResource implements Resource, Resource.ImageProvider {
 	private String name;
 
 	private BufferedImage image;
+	private BufferedImage thumbnail;
+	private float thumbnailScale;
 	
 	public ImageResource() {
 	}
@@ -52,6 +55,8 @@ public class ImageResource implements Resource, Resource.ImageProvider {
 			loader.setMessage(name+":\nloading");
 			String path = loader.getProjectDirectory().getAbsolutePath()+"\\"+name;
 			image = ImageIO.read(new File(path));
+			thumbnailScale = VideoTools.getThumbnailScale(image);
+			thumbnail = VideoTools.scaleImage(image, thumbnailScale);
 			loader.setMessage(name+":\nloaded");
 		} catch (IOException ex) {
 			Logger.getLogger(AudioResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -80,12 +85,16 @@ public class ImageResource implements Resource, Resource.ImageProvider {
 
 	@Override
 	public BufferedImage getFrame(int index, boolean thumbnail) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		if (thumbnail) {
+			return this.thumbnail;
+		} else {
+			return this.image;
+		}
 	}
 
 	@Override
 	public float getThumbnailScale() {
-		throw new UnsupportedOperationException("Not supported yet.");
+		return thumbnailScale;
 	}
 
 }
