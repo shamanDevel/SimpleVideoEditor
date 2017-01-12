@@ -176,6 +176,7 @@ public class VideoTools {
 				}
 				//read image
 				BufferedImage img = ImageIO.read(image);
+				img = ensureFormat(img, BufferedImage.TYPE_4BYTE_ABGR);
 				//write high res
 				zipHigh.putNextEntry(new ZipEntry((i-1)+".png"));
 				ImageIO.write(img, "png", zipHigh);
