@@ -5,8 +5,7 @@
  */
 package org.shaman.sve.player;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.logging.Logger;
 import org.shaman.sve.FrameTime;
@@ -44,24 +43,39 @@ public class PlayerImageControl {
 		return img;
 	}
 	
-	public void drawFrame(Graphics2D g, Image frame, boolean thumbnail) {
-		int x = timelineObject.getX();
-		int y = timelineObject.getY();
-		int w = timelineObject.getWidth();
-		int h = timelineObject.getHeight();
-		if (timelineObject.isKeepAspectRatio()) {
-			//w,h defines a rect, place the image centered inside it
-			float aspect = w / (float) h;
-			if (aspect > timelineObject.getAspect()) {
-				// w is greater
-				w = (int) (h * timelineObject.getAspect());
-				x = (timelineObject.getWidth() - w) / 2;
-			} else if (aspect < timelineObject.getAspect()) {
-				// h is greater
-				h = (int) (w / timelineObject.getAspect());
-				y = (timelineObject.getHeight() - h) / 2;
+	public void drawFrame(Graphics2D g, Image frame, boolean thumbnail, boolean selected) {
+		Graphics2D g2d = (Graphics2D) g.create();
+		
+		if (frame != null) {
+			int x = timelineObject.getX();
+			int y = timelineObject.getY();
+			int w = timelineObject.getWidth();
+			int h = timelineObject.getHeight();
+			if (timelineObject.isKeepAspectRatio()) {
+				//w,h defines a rect, place the image centered inside it
+				float aspect = w / (float) h;
+				if (aspect > timelineObject.getAspect()) {
+					// w is greater
+					w = (int) (h * timelineObject.getAspect());
+					x = (timelineObject.getWidth() - w) / 2;
+				} else if (aspect < timelineObject.getAspect()) {
+					// h is greater
+					h = (int) (w / timelineObject.getAspect());
+					y = (timelineObject.getHeight() - h) / 2;
+				}
 			}
+			g2d.setClip(0, 0, player.getProject().getWidth(), player.getProject().getHeight());
+			g2d.drawImage(frame, x, y, w, h, null);
+			g2d.setClip(null);
 		}
-		g.drawImage(frame, x, y, w, h, null);
+		
+		if (selected) {
+			g2d.setColor(Color.GRAY);
+			Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
+			g2d.setStroke(dashed);
+			g2d.drawRect(timelineObject.getX(), timelineObject.getY(), timelineObject.getWidth(), timelineObject.getHeight());
+		}
+		
+		g2d.dispose();
 	}
 }

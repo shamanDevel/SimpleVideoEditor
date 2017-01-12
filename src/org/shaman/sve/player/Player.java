@@ -21,6 +21,7 @@ import net.beadsproject.beads.core.UGen;
 import net.beadsproject.beads.ugens.Clock;
 import net.beadsproject.beads.ugens.Gain;
 import org.shaman.sve.FrameTime;
+import org.shaman.sve.Selections;
 import org.shaman.sve.model.*;
 
 /**
@@ -39,6 +40,7 @@ public class Player {
 	
 	private final Project project;
 	private final UndoableEditSupport undoSupport;
+	private final Selections selections;
 	private final AudioContext ac;
 	private final Gain masterGain;
 	private final ResourceLoaderImpl resourceLoader;
@@ -51,9 +53,10 @@ public class Player {
 	private ClockBead clockBead;
 	private ArrayList<PlayerAudioControl> audioControls = new ArrayList<>();
 
-	public Player(Project project, UndoableEditSupport undoSupport) {
+	public Player(Project project, UndoableEditSupport undoSupport, Selections selections) {
 		this.project = project;
 		this.undoSupport = undoSupport;
+		this.selections = selections;
 		
 		ac = new AudioContext(10000);
 		ac.start();
@@ -75,6 +78,10 @@ public class Player {
 
 	public Gain getMasterGain() {
 		return masterGain;
+	}
+
+	public Project getProject() {
+		return project;
 	}
 	
 	public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -150,20 +157,22 @@ public class Player {
 			project.setTime(currentTime.clone());
 		}
 		
+		Graphics2D g2d = (Graphics2D) g.create();
+		
 		//draw background
-		g.setColor(project.getBackgroundColor());
-		g.fillRect(0, 0, project.getWidth(), project.getHeight());
+		g2d.setColor(project.getBackgroundColor());
+		g2d.fillRect(0, 0, project.getWidth(), project.getHeight());
 		
 		//first test, no parallelism
 		for (TimelineObject to : project.getTimelineObjects()) {
 			PlayerImageControl pic = (PlayerImageControl) to.playerProperties.get(IMAGE_CONTROL);
 			if (pic != null) {
 				Image img = pic.computeFrame(currentTime, true);
-				if (img != null) {
-					pic.drawFrame(g, img, true);
-				}
+				pic.drawFrame(g2d, img, true, selections.getSelectedTimelineObject()==to);
 			}
 		}
+		
+		g2d.dispose();
 	}
 	
 	/**

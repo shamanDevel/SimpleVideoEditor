@@ -280,7 +280,7 @@ public class SimpleVideoEditor extends JFrame {
 		propertyPanel.setProject(project);
 		
 		//init player
-		player = new Player(project, undoSupport);
+		player = new Player(project, undoSupport, selections);
 		player.loadResources();
 		player.initTimelineObjects();
 		resourcePanel.setPlayer(player);
