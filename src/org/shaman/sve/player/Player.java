@@ -5,6 +5,8 @@
  */
 package org.shaman.sve.player;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -31,6 +33,7 @@ public class Player {
 	
 	private static final int AUDIO_CLOCK_RESOLUTION = 10; //every 10 msec
 	private static final String AUDIO_CONTROL = "audioControl";
+	private static final String IMAGE_CONTROL = "imageControl";
 	
 	public static final String PROP_PLAYING = "playing";
 	
@@ -42,7 +45,9 @@ public class Player {
 	private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
 	private boolean playing;
-	private FrameTime time;
+	private long playingStartTime;
+	private FrameTime playingStartFrame;
+	private FrameTime currentTime;
 	private ClockBead clockBead;
 	private ArrayList<PlayerAudioControl> audioControls = new ArrayList<>();
 
@@ -61,6 +66,7 @@ public class Player {
 		ac.out.addDependent(clock);
 
 		resourceLoader = new ResourceLoaderImpl();
+		currentTime = new FrameTime(project.getFramerate());
 	}
 	
 	public AudioContext getAudioContext() {
@@ -84,7 +90,7 @@ public class Player {
 	 * @param msec 
 	 */
 	public void setTime(FrameTime msec) {
-		time = msec;
+		currentTime = msec;
 	}
 	
 	public boolean isPlaying() {
@@ -104,14 +110,16 @@ public class Player {
 			//todo: check if deactivated
 			PlayerAudioControl pac = (PlayerAudioControl) obj.playerProperties.get(AUDIO_CONTROL);
 			if (pac != null) {
-				pac.setTime(time.toMillis());
+				pac.setTime(currentTime.toMillis());
 				pac.start();
 				audioControls.add(pac);
 			}
 		}
-		clockBead.start(time.toMillis());
+		clockBead.start(currentTime.toMillis());
 		playing = true;
 		propertyChangeSupport.firePropertyChange(PROP_PLAYING, false, true);
+		playingStartTime = System.currentTimeMillis();
+		playingStartFrame = currentTime.clone();
 	}
 	
 	/**
@@ -129,6 +137,39 @@ public class Player {
 		propertyChangeSupport.firePropertyChange(PROP_PLAYING, true, false);
 	}
 	
+	/**
+	 * Draws the images. Should be called on a regular basis, optimally with the project frame rate
+	 * @param g 
+	 */
+	public void draw(Graphics2D g) {
+		//update time
+		if (playing) {
+			long elapsedTime = System.currentTimeMillis() - playingStartTime;
+			currentTime.fromMillis((int) elapsedTime);
+			currentTime.addLocal(playingStartFrame);
+			project.setTime(currentTime.clone());
+		}
+		
+		//draw background
+		g.setColor(project.getBackgroundColor());
+		g.fillRect(0, 0, project.getWidth(), project.getHeight());
+		
+		//first test, no parallelism
+		for (TimelineObject to : project.getTimelineObjects()) {
+			PlayerImageControl pic = (PlayerImageControl) to.playerProperties.get(IMAGE_CONTROL);
+			if (pic != null) {
+				Image img = pic.computeFrame(currentTime, true);
+				if (img != null) {
+					ImageTimelineObject ito = (ImageTimelineObject) to;
+					g.drawImage(img, ito.getX(), ito.getY(), ito.getWidth(), ito.getHeight(), null);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Destroys all allocated resources
+	 */
 	public void destroy() {
 		ac.stop();
 	}
@@ -158,6 +199,10 @@ public class Player {
 			if ((res instanceof AudioResource) || (res instanceof VideoResource)) {
 				PlayerAudioControl pac = new PlayerAudioControl(obj, this);
 				obj.playerProperties.put(AUDIO_CONTROL, pac);
+			}
+			if ((res instanceof VideoResource) || (res instanceof ImageResource)) {
+				PlayerImageControl pic = new PlayerImageControl((ImageTimelineObject) obj, this);
+				obj.playerProperties.put(IMAGE_CONTROL, pic);
 			}
 		}
 	}

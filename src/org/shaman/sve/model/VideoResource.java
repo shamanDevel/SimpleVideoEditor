@@ -30,6 +30,7 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 	private BufferedImage[] thumbnails;
 	private int numFrames;
 	private int duration;
+	private float thumbnailScale;
 	
 	public VideoResource() {
 	}
@@ -76,6 +77,10 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 			}
 			loader.setMessage("video frames loaded");
 			
+			//3. get thumbnail scale
+			BufferedImage highRes = getFrame(0, false);
+			thumbnailScale = thumbnails[0].getWidth() / (float) highRes.getWidth();
+			
 			LOG.log(Level.INFO, "video loaded, audio length: {0}, video length: {1} seconds", 
 					new Object[]{audio.getLength()/1000, numFrames / (float)framerate});
 			duration = (int) Math.max(audio.getLength(), numFrames / (float)framerate);
@@ -91,6 +96,11 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 	
 	public int getDurationInMsec() {
 		return duration;
+	}
+
+	@Override
+	public float getThumbnailScale() {
+		return thumbnailScale;
 	}
 	
 	@Override

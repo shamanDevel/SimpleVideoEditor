@@ -5,11 +5,18 @@
  */
 package org.shaman.sve;
 
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.Timer;
 import javax.swing.undo.UndoableEditSupport;
 import org.shaman.sve.model.Project;
 import org.shaman.sve.player.Player;
@@ -25,6 +32,7 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 	private Player player;
 	private UndoableEditSupport undoSupport;
 	private Selections selections;
+	private Timer timer;
 	
 	private FrameTime currentTime;
 	
@@ -33,12 +41,21 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 	 */
 	public MainPanel() {
 		initComponents();
+		timer = new Timer(1000 / 25, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				contentPanel.repaint();
+			}
+		});
+		timer.setRepeats(true);
+		timer.start();
 	}
 
 	public void setProject(Project project) {
 		this.project = project;
 		project.addPropertyChangeListener(this);
 		currentTime = new FrameTime(project.getFramerate());
+		timer.setDelay(1000 / project.getFramerate());
 	}
 	
 	public void setUndoSupport(UndoableEditSupport undoSupport) {
@@ -106,6 +123,31 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 		LOG.log(Level.INFO, "change current time to {0} ms", time);
 	}
 	
+	private void paintContent(Graphics2D g) {
+		if (player == null || project == null) {
+			return;
+		}
+		//transform graphics to view the whole screen
+		int sw = contentPanel.getWidth();
+		int sh = contentPanel.getHeight();
+		int pw = project.getWidth();
+		int ph = project.getHeight();
+		float scale = Math.min(sw / (float) pw, sh / (float) ph);
+		pw *= scale;
+		ph *= scale;
+		int ox = (sw - pw) / 2;
+		int oy = (sh - ph) / 2;
+		AffineTransform at = g.getTransform();
+		g.translate(ox, oy);
+		g.scale(scale, scale);
+		
+		//send to player
+		player.draw(g);
+		
+		//reset transform
+		g.setTransform(at);
+	}
+	
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always
@@ -115,7 +157,7 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        contentPanel = new ContentPanel();
         playButton = new javax.swing.JButton();
         stopButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
@@ -126,14 +168,14 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         setMinimumSize(new java.awt.Dimension(400, 300));
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout contentPanelLayout = new javax.swing.GroupLayout(contentPanel);
+        contentPanel.setLayout(contentPanelLayout);
+        contentPanelLayout.setHorizontalGroup(
+            contentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        contentPanelLayout.setVerticalGroup(
+            contentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 367, Short.MAX_VALUE)
         );
 
@@ -176,7 +218,7 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(contentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(playButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -194,7 +236,7 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(contentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(playButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -242,8 +284,8 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel contentPanel;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton playButton;
     private javax.swing.JButton stopButton;
     private javax.swing.JLabel timeLabel;
@@ -269,5 +311,16 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 					break;
 			}
 		}
+	}
+	
+	private class ContentPanel extends JPanel {
+
+		@Override
+		public void paint(Graphics g) {
+			paintComponent(g);
+			paintBorder(g);
+			paintContent((Graphics2D) g);
+		}
+		
 	}
 }

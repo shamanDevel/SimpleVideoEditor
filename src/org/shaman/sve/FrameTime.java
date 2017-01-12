@@ -113,6 +113,14 @@ public final class FrameTime implements Comparable<FrameTime>, Cloneable {
 		return this;
 	}
 	
+	/**
+	 * Converts it into frames from the beginning
+	 * @return the frames from beginning
+	 */
+	public int toFrames() {
+		return frame + seconds * framesPerSecond;
+	}
+	
 	public FrameTime incrementLocal() {
 		frame++;
 		if (frame >= framesPerSecond) {

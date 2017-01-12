@@ -36,5 +36,10 @@ public interface Resource {
 		 * @return the frame
 		 */
 		BufferedImage getFrame(int index, boolean thumbnail);
+		/**
+		 * Returns the scale of the thumbnail
+		 * @return 
+		 */
+		float getThumbnailScale();
 	}
 }

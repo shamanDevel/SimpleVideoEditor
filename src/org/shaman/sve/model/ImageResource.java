@@ -78,4 +78,9 @@ public class ImageResource implements Resource, Resource.ImageProvider {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	@Override
+	public float getThumbnailScale() {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
 }
