@@ -48,9 +48,9 @@ public class AudioResource implements Resource {
 		}
 		try {
 			//load sample
-			loader.setMessage("load "+name);
+			loader.setMessage(name+":\nloading");
 			sample = new Sample(loader.getProjectDirectory().getAbsolutePath()+"\\"+name);
-			loader.setMessage("loaded");
+			loader.setMessage(name+":\nloaded");
 		} catch (IOException ex) {
 			Logger.getLogger(AudioResource.class.getName()).log(Level.SEVERE, null, ex);
 			loader.setMessage(ex.getMessage());

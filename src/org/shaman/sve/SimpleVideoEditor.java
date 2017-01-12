@@ -7,6 +7,8 @@ package org.shaman.sve;
 
 import org.shaman.sve.player.Player;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
@@ -262,7 +264,7 @@ public class SimpleVideoEditor extends JFrame {
 		try {
 			project = serializer.read(Project.class, source);
 			projectLoaded();
-			LOG.info("project loaded");
+			LOG.info("project file loaded");
 		} catch (Exception ex) {
 			LOG.log(Level.SEVERE, null, ex);
 		}
@@ -274,19 +276,77 @@ public class SimpleVideoEditor extends JFrame {
 		setTitle(project.getFolder().getAbsolutePath());
 		project.setTime(new FrameTime(project.getFramerate()));
 		
-		resourcePanel.setProject(project);
-		timelinePanel.setProject(project);
-		mainPanel.setProject(project);
-		propertyPanel.setProject(project);
+		//create dialog
+		JDialog dialog = new JDialog(SimpleVideoEditor.this, "Loading", true);
+		JLabel message = new JLabel("Load project");
+		message.setPreferredSize(new Dimension(300, 50));
+		JProgressBar bar = new JProgressBar(0, 1000);
+		dialog.setLayout(new BorderLayout());
+		dialog.add(message, BorderLayout.NORTH);
+		dialog.add(bar, BorderLayout.CENTER);
+		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		dialog.setResizable(false);
+		dialog.pack();
+		dialog.setLocationRelativeTo(null);
 		
-		//init player
-		player = new Player(project, undoSupport, selections);
-		player.loadResources();
-		player.initTimelineObjects();
-		resourcePanel.setPlayer(player);
-		timelinePanel.setPlayer(player);
-		mainPanel.setPlayer(player);
+		ProjectLoadingWorker worker = new ProjectLoadingWorker(dialog, bar, message);
+		worker.execute();
+		dialog.setVisible(true);
 	}
+	private class LoadingItem {
+		private float progress;
+		private String message;
+	}
+	private class ProjectLoadingWorker extends SwingWorker<Void, LoadingItem> 
+			implements Player.ResourceLoadingCallback {
+		private JDialog dialog;
+		private JProgressBar bar;
+		private JLabel label;
+
+		public ProjectLoadingWorker(JDialog dialog, JProgressBar bar, JLabel label) {
+			this.dialog = dialog;
+			this.bar = bar;
+			this.label = label;
+		}
+		
+		@Override
+		protected Void doInBackground() throws Exception {
+			//init player
+			player = new Player(project, undoSupport, selections);
+			player.loadResources(this);
+			player.initTimelineObjects();
+			return null;
+		}
+
+		@Override
+		protected void done() {
+			//set project
+			resourcePanel.setProject(project);
+			timelinePanel.setProject(project);
+			mainPanel.setProject(project);
+			propertyPanel.setProject(project);
+			//set player
+			resourcePanel.setPlayer(player);
+			timelinePanel.setPlayer(player);
+			mainPanel.setPlayer(player);
+			//close dialog
+			dialog.setVisible(false);
+			dialog.dispose();
+		}
+
+		@Override
+		public void onMessage(String message) {
+			label.setText("<html>"+message.replaceAll("\n", "<br>")+"</html>");
+		}
+
+		@Override
+		public void onProgress(float progress) {
+			bar.setValue((int) (progress*1000));
+		}
+		
+	}
+	
+	
 	private void saveProject() {
 		LOG.info("save project");
 		Serializer serializer = SerializationUtils.createSerializer();

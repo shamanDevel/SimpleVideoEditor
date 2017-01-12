@@ -44,6 +44,7 @@ public class Player {
 	private final AudioContext ac;
 	private final Gain masterGain;
 	private final ResourceLoaderImpl resourceLoader;
+	private ResourceLoadingCallback resourceLoadingCallback;
 	private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
 	private boolean playing;
@@ -182,10 +183,21 @@ public class Player {
 		ac.stop();
 	}
 	
-	public void loadResources() {
+	public static interface ResourceLoadingCallback {
+		void onMessage(String message);
+		void onProgress(float progress);
+	}
+	
+	public void loadResources(ResourceLoadingCallback callback) {
+		this.resourceLoadingCallback = callback;
+		if (callback != null) {callback.onProgress(0);}
+		int i = 0;
 		for (Resource r : project.getResources()) {
 			loadResource(r);
+			i++;
+			if (callback != null) {callback.onProgress(i / (float)project.getResources().size());}
 		}
+		this.resourceLoadingCallback = null;
 	}
 	public void loadResource(Resource res) {
 		res.load(resourceLoader);
@@ -251,6 +263,9 @@ public class Player {
 		@Override
 		public void setMessage(String message) {
 			LOG.info("loading: "+message);
+			if (resourceLoadingCallback != null) {
+				resourceLoadingCallback.onMessage(message);
+			}
 		}
 
 		@Override

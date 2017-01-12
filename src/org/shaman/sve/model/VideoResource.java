@@ -61,13 +61,13 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 	public void load(ResourceLoader loader) {
 		try {
 			//path
-			loader.setMessage("load video "+name);
+			loader.setMessage(name+":\nload audio");
 			String basePath = loader.getProjectDirectory().getAbsolutePath()+"\\"+name;
 			videoTools = new VideoTools(basePath);
 			
 			//1. load audio
 			audio = videoTools.loadAudio();
-			loader.setMessage("audio loaded");
+			loader.setMessage(name+":\nload video");
 			
 			//2. load thumbnails
 			numFrames = videoTools.getFrameCount();
@@ -75,7 +75,7 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 			for (int i=0; i<numFrames; ++i) {
 				thumbnails[i] = videoTools.getThumbnail(i);
 			}
-			loader.setMessage("video frames loaded");
+			loader.setMessage(name+":\nloaded");
 			
 			//3. get thumbnail scale
 			BufferedImage highRes = getFrame(0, false);
