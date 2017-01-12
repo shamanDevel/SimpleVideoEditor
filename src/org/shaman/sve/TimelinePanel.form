@@ -31,6 +31,8 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="addButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="removeButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="upButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="downButton" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="timelinePanel" max="32767" attributes="0"/>
@@ -44,7 +46,11 @@
               <Component id="addButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="removeButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="88" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="upButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="downButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="26" max="32767" attributes="0"/>
           </Group>
           <Component id="timelinePanel" alignment="0" max="32767" attributes="0"/>
       </Group>
@@ -90,5 +96,29 @@
         </DimensionLayout>
       </Layout>
     </Container>
+    <Component class="javax.swing.JButton" name="upButton">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/org/shaman/sve/icons/up16.png"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" value="moves the object up"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="upButtonEvent"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="downButton">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/org/shaman/sve/icons/down16.png"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" value="moves the object down"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="downButtonEvent"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>

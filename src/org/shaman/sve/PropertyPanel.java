@@ -107,7 +107,9 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
         mainPanel = new javax.swing.JPanel();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        setMinimumSize(new java.awt.Dimension(150, 200));
+        setMaximumSize(new java.awt.Dimension(300, 32767));
+        setMinimumSize(new java.awt.Dimension(300, 200));
+        setPreferredSize(new java.awt.Dimension(300, 459));
 
         currentObjectLabel.setText("jLabel1");
 
@@ -132,8 +134,8 @@ public class PropertyPanel extends javax.swing.JPanel implements PropertyChangeL
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(currentObjectLabel)
-                .addContainerGap(154, Short.MAX_VALUE))
-            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(271, Short.MAX_VALUE))
+            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

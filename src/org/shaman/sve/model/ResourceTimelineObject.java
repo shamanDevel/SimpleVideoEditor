@@ -54,6 +54,7 @@ public abstract class ResourceTimelineObject<R extends Resource> extends Timelin
 	 * @param newResource new value of resource
 	 */
 	public void setResource(final R newResource) {
+		if (newResource == resource) return;
 		final R oldResource = this.resource;
 		this.resource = newResource;
 		propertyChangeSupport.firePropertyChange(PROP_RESOURCE, oldResource, newResource);

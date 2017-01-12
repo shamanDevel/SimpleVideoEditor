@@ -352,6 +352,8 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         timelinePanel = new javax.swing.JPanel();
+        upButton = new javax.swing.JButton();
+        downButton = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         setMinimumSize(new java.awt.Dimension(400, 100));
@@ -385,6 +387,24 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
+        upButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/shaman/sve/icons/up16.png"))); // NOI18N
+        upButton.setToolTipText("moves the object up");
+        upButton.setEnabled(false);
+        upButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                upButtonEvent(evt);
+            }
+        });
+
+        downButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/shaman/sve/icons/down16.png"))); // NOI18N
+        downButton.setToolTipText("moves the object down");
+        downButton.setEnabled(false);
+        downButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downButtonEvent(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -393,7 +413,9 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(addButton)
-                    .addComponent(removeButton))
+                    .addComponent(removeButton)
+                    .addComponent(upButton)
+                    .addComponent(downButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(timelinePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -404,7 +426,11 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
                 .addComponent(addButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(removeButton)
-                .addContainerGap(88, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(upButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(downButton)
+                .addContainerGap(26, Short.MAX_VALUE))
             .addComponent(timelinePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -443,6 +469,59 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		});
     }//GEN-LAST:event_removeButtonEvent
 
+	private void move(TimelineObject obj, int dir) {
+		int index = project.getTimelineObjects().indexOf(obj);
+		int newIndex = index + dir;
+		if (newIndex >= 0 && newIndex < project.getTimelineObjects().size()) {
+			project.getTimelineObjects().remove(index);
+			project.getTimelineObjects().add(newIndex, obj);
+			project.fireTimelineObjectsChanged();
+			tableModel.fireUpdate();
+		}
+	}
+	
+    private void upButtonEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upButtonEvent
+        final TimelineObject obj = selections.getSelectedTimelineObject();
+		assert (obj != null);
+		move(obj, -1);
+		undoSupport.postEdit(new AbstractUndoableEdit(){
+
+			@Override
+			public void undo() throws CannotUndoException {
+				super.undo();
+				move(obj, 1);
+			}
+
+			@Override
+			public void redo() throws CannotRedoException {
+				super.redo();
+				move(obj, -1);
+			}
+			
+		});
+    }//GEN-LAST:event_upButtonEvent
+
+    private void downButtonEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonEvent
+        final TimelineObject obj = selections.getSelectedTimelineObject();
+		assert (obj != null);
+		move(obj, 1);
+		undoSupport.postEdit(new AbstractUndoableEdit(){
+
+			@Override
+			public void undo() throws CannotUndoException {
+				super.undo();
+				move(obj, -1);
+			}
+
+			@Override
+			public void redo() throws CannotRedoException {
+				super.redo();
+				move(obj, 1);
+			}
+			
+		});
+    }//GEN-LAST:event_downButtonEvent
+
 	private void timelineObjectSelected(TreePath path) {
 		if (path == null) {
 			return;
@@ -454,11 +533,15 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 			selections.setSelectedTimelineObject(null);
 		}
 		removeButton.setEnabled(selections.getSelectedTimelineObject() != null);
+		upButton.setEnabled(selections.getSelectedTimelineObject() != null);
+		downButton.setEnabled(selections.getSelectedTimelineObject() != null);
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JButton downButton;
     private javax.swing.JButton removeButton;
     private javax.swing.JPanel timelinePanel;
+    private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
 }
