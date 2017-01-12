@@ -52,6 +52,10 @@ public class Project {
 	public static final String PROP_LENGTH = "length";
 	public static final String PROP_TIMELINE_OBJECT_CHANGED = "tloChanged";
 	public static final String PROP_TIMELINE_OBJECTS_CHANGED = "tloxChanged";
+	public static final String PROP_TIMELINE_OBJECT_ADDED = "tlo+";
+	public static final String PROP_TIMELINE_OBJECT_REMOVED = "tlo-";
+	public static final String PROP_RESOURCE_ADDED = "res+";
+	public static final String PROP_RESOURCE_REMOVED = "res-";
 	
 	public Project() {
 	}
@@ -133,6 +137,16 @@ public class Project {
 		this.resources = resources;
 	}
 
+	public void addResource(Resource res) {
+		resources.add(res);
+		propertyChangeSupport.firePropertyChange(PROP_RESOURCE_ADDED, null, res);
+	}
+	
+	public void removeResource(Resource res) {
+		resources.remove(res);
+		propertyChangeSupport.firePropertyChange(PROP_RESOURCE_REMOVED, res, null);
+	}
+	
 	public ArrayList<TimelineObject> getTimelineObjects() {
 		return timelineObjects;
 	}
@@ -154,10 +168,21 @@ public class Project {
 	
 	/**
 	 * Fires a property changed event that all timeline objects are changed.
-	 * This includes adding + removing objects
 	 */
 	public void fireTimelineObjectsChanged() {
 		propertyChangeSupport.firePropertyChange(PROP_TIMELINE_OBJECTS_CHANGED, null, null);
+	}
+	
+	public void addTimelineObject(TimelineObject obj) {
+		timelineObjects.add(obj);
+		propertyChangeSupport.firePropertyChange(PROP_TIMELINE_OBJECT_ADDED, null, obj);
+		fireTimelineObjectsChanged();
+	}
+	
+	public void removeTimelineObject(TimelineObject obj) {
+		timelineObjects.remove(obj);
+		propertyChangeSupport.firePropertyChange(PROP_TIMELINE_OBJECT_REMOVED, obj, null);
+		fireTimelineObjectsChanged();
 	}
 	
 	/**

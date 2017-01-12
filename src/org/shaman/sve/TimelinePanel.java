@@ -224,27 +224,23 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 	 * @param obj 
 	 */
 	private void addTimelineObject(final TimelineObject obj) {
-		project.getTimelineObjects().add(obj);
-		player.initTimelineObject(obj);
-		project.fireTimelineObjectsChanged();
+		project.addTimelineObject(obj);
 		tableModel.fireUpdate();
 		LOG.log(Level.INFO, "timeline object added: {0}", obj);
 		undoSupport.postEdit(new AbstractUndoableEdit() {
 			@Override
 			public void undo() throws CannotUndoException {
 				super.undo();
-				project.getTimelineObjects().remove(obj);
+				project.removeTimelineObject(obj);
 				tableModel.fireUpdate();
-				project.fireTimelineObjectsChanged();
 				LOG.info("undo: add timeline object");
 			}
 
 			@Override
 			public void redo() throws CannotRedoException {
 				super.redo();
-				project.getTimelineObjects().add(obj);
+				project.addTimelineObject(obj);
 				tableModel.fireUpdate();
-				project.fireTimelineObjectsChanged();
 				LOG.info("redo: add timeline object");
 			}
 		
@@ -420,7 +416,30 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
     }//GEN-LAST:event_addButtonEvent
 
     private void removeButtonEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonEvent
-        // TODO add your handling code here:
+        final TimelineObject obj = selections.getSelectedTimelineObject();
+		assert (obj != null);
+		project.removeTimelineObject(obj);
+		tableModel.fireUpdate();
+		table.clearSelection();
+		LOG.log(Level.INFO, "timeline object {0} removed", obj);
+		undoSupport.postEdit(new AbstractUndoableEdit() {
+
+			@Override
+			public void undo() throws CannotUndoException {
+				super.undo();
+				project.addTimelineObject(obj);
+				tableModel.fireUpdate();
+				LOG.info("undo: remove timeline object");
+			}
+
+			@Override
+			public void redo() throws CannotRedoException {
+				super.redo();
+				project.removeTimelineObject(obj);
+				tableModel.fireUpdate();
+				LOG.info("redo: remove timeline object");
+			}
+		});
     }//GEN-LAST:event_removeButtonEvent
 
 	private void timelineObjectSelected(TreePath path) {
@@ -433,6 +452,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		} else {
 			selections.setSelectedTimelineObject(null);
 		}
+		removeButton.setEnabled(selections.getSelectedTimelineObject() != null);
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

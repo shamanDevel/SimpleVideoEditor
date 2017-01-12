@@ -49,10 +49,10 @@ public class ImageResource implements Resource, Resource.ImageProvider {
 		}
 		try {
 			//load sample
-			loader.setMessage("load "+name);
+			loader.setMessage(name+":\nloading");
 			String path = loader.getProjectDirectory().getAbsolutePath()+"\\"+name;
 			image = ImageIO.read(new File(path));
-			loader.setMessage("loaded");
+			loader.setMessage(name+":\nloaded");
 		} catch (IOException ex) {
 			Logger.getLogger(AudioResource.class.getName()).log(Level.SEVERE, null, ex);
 			loader.setMessage(ex.getMessage());
@@ -62,6 +62,11 @@ public class ImageResource implements Resource, Resource.ImageProvider {
 	@Override
 	public boolean isLoaded() {
 		return image != null;
+	}
+
+	@Override
+	public void unload() {
+		image = null;
 	}
 
 	public BufferedImage getImage() {

@@ -69,6 +69,8 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 	public void setPlayer(Player player) {
 		this.player = player;
 		player.addPropertyChangeListener(this);
+		setTotalTime(project.getLength());
+		setCurrentTime(project.getTime());
 	}
 
 	private void setPlaying(boolean playing) {

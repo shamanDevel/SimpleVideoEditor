@@ -5,15 +5,14 @@
  */
 package org.shaman.sve;
 
-import org.shaman.sve.player.Player;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.undo.AbstractUndoableEdit;
@@ -22,10 +21,8 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEditSupport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.shaman.sve.model.AudioResource;
-import org.shaman.sve.model.Project;
-import org.shaman.sve.model.Resource;
-import org.shaman.sve.model.VideoResource;
+import org.shaman.sve.model.*;
+import org.shaman.sve.player.Player;
 import org.shaman.sve.player.VideoTools;
 
 /**
@@ -225,7 +222,43 @@ public class ResourcePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeEvent
-        // TODO add your handling code here:
+        final Resource res = getSelectedResource();
+		assert (res != null);
+		//check if it still in use
+		StringBuilder message = new StringBuilder();
+		for (TimelineObject obj : project.getTimelineObjects()) {
+			if ((obj instanceof ResourceTimelineObject) && ((ResourceTimelineObject) obj).getResource()==res) {
+				message.append('\n').append(obj);
+			}
+		}
+		if (message.length()>0) {
+			JOptionPane.showMessageDialog(this, "Resource is still in use:\n"+message, "Resource is still in use", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		//remove resource
+		project.removeResource(res);
+		listModel.removeElement(res);
+		resourceList.clearSelection();
+		LOG.info("resource "+res+" removed");
+		undoSupport.postEdit(new AbstractUndoableEdit() {
+
+			@Override
+			public void undo() throws CannotUndoException {
+				super.undo();
+				project.addResource(res);
+				listModel.addElement(res);
+				LOG.info("undo: remove resource");
+			}
+
+			@Override
+			public void redo() throws CannotRedoException {
+				super.redo();
+				project.removeResource(res);
+				listModel.removeElement(res);
+				LOG.info("redo: remove resource");
+			}
+			
+		});
     }//GEN-LAST:event_removeEvent
 
     private void addAudioEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAudioEvent
@@ -253,7 +286,6 @@ public class ResourcePanel extends javax.swing.JPanel {
 			//create resource
 			final AudioResource res = new AudioResource(RESOURCE_FOLDER + "/" + AUDIO_FOLDER + "/" + audioFile.getName());
 			project.getResources().add(res);
-			player.loadResource(res);
 			listModel.addElement(res);
 			LOG.info("audio file copied and resource added");
 			//add undo support
@@ -262,7 +294,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 				public void undo() throws CannotUndoException {
 					super.undo();
 //					targetFile.delete();
-					project.getResources().remove(res);
+					project.removeResource(res);
 					listModel.removeElement(res);
 					LOG.info("undo: add audio");
 				}
@@ -276,7 +308,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 //						LOG.log(Level.SEVERE, null, ex);
 //						return;
 //					}
-					project.getResources().add(res);
+					project.addResource(res);
 					listModel.addElement(res);
 					LOG.info("redo: add audio");
 				}
@@ -317,8 +349,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 			//create resource
 			final VideoResource res = new VideoResource(RESOURCE_FOLDER + "/" + VIDEO_FOLDER + "/" + baseName);
 			res.setFramerate(project.getFramerate());
-			project.getResources().add(res);
-			player.loadResource(res);
+			project.addResource(res);
 			listModel.addElement(res);
 			LOG.info("video file copied and resource added");
 			//add undo support
@@ -326,7 +357,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 				@Override
 				public void undo() throws CannotUndoException {
 					super.undo();
-					project.getResources().remove(res);
+					project.removeResource(res);
 					listModel.removeElement(res);
 					LOG.info("undo: add video");
 				}
@@ -334,7 +365,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 				@Override
 				public void redo() throws CannotRedoException {
 					super.redo();
-					project.getResources().add(res);
+					project.addResource(res);
 					listModel.addElement(res);
 					LOG.info("redo: add video");
 				}
@@ -352,7 +383,9 @@ public class ResourcePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_syncEvent
 
     private void selectionChangedEvent(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_selectionChangedEvent
-        selections.setSelectedResource(getSelectedResource());
+        Resource res = getSelectedResource();
+		selections.setSelectedResource(res);
+		removeButton.setEnabled(res != null);
     }//GEN-LAST:event_selectionChangedEvent
 
 

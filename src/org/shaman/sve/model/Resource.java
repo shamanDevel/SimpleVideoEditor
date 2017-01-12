@@ -20,6 +20,7 @@ public interface Resource {
 	
 	void load(ResourceLoader loader);
 	boolean isLoaded();
+	void unload();
 	
 	public static interface ResourceLoader {
 		File getProjectDirectory();

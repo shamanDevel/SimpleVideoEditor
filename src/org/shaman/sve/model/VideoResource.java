@@ -93,6 +93,13 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 	public boolean isLoaded() {
 		return thumbnails != null;
 	}
+
+	@Override
+	public void unload() {
+		audio.clear();
+		audio = null;
+		thumbnails = null;
+	}
 	
 	public int getDurationInMsec() {
 		return duration;

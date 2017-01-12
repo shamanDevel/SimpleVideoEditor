@@ -62,6 +62,12 @@ public class AudioResource implements Resource {
 		return sample != null;
 	}
 
+	@Override
+	public void unload() {
+		sample.clear();
+		sample = null;
+	}
+
 	public Sample getSample() {
 		return sample;
 	}

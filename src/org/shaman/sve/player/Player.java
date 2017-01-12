@@ -7,6 +7,7 @@ package org.shaman.sve.player;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -28,7 +29,7 @@ import org.shaman.sve.model.*;
  *
  * @author Sebastian Weiss
  */
-public class Player {
+public class Player implements PropertyChangeListener {
 
 	private static final Logger LOG = Logger.getLogger(Player.class.getName());
 	
@@ -58,6 +59,7 @@ public class Player {
 		this.project = project;
 		this.undoSupport = undoSupport;
 		this.selections = selections;
+		project.addPropertyChangeListener(this);
 		
 		ac = new AudioContext(10000);
 		ac.start();
@@ -182,6 +184,28 @@ public class Player {
 	public void destroy() {
 		ac.stop();
 	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getSource() == project) {
+			switch (evt.getPropertyName()) {
+				case Project.PROP_RESOURCE_ADDED:
+					loadResource((Resource) evt.getNewValue());
+					break;
+				case Project.PROP_RESOURCE_REMOVED:
+					deleteResource((Resource) evt.getOldValue());
+					break;
+				case Project.PROP_TIMELINE_OBJECT_ADDED:
+					initTimelineObject((TimelineObject) evt.getNewValue());
+					computeTotalLength();
+					break;
+				case Project.PROP_TIMELINE_OBJECT_REMOVED:
+					deleteTimelineObject((TimelineObject) evt.getOldValue());
+					computeTotalLength();
+					break;
+			}
+		}
+	}
 	
 	public static interface ResourceLoadingCallback {
 		void onMessage(String message);
@@ -200,7 +224,14 @@ public class Player {
 		this.resourceLoadingCallback = null;
 	}
 	public void loadResource(Resource res) {
-		res.load(resourceLoader);
+		if (!res.isLoaded()) {
+			res.load(resourceLoader);
+		}
+	}
+	
+	public void deleteResource(Resource res) {
+		assert(res.isLoaded());
+		res.unload();
 	}
 	
 	public void initTimelineObjects() {
@@ -225,6 +256,10 @@ public class Player {
 				obj.playerProperties.put(IMAGE_CONTROL, pic);
 			}
 		}
+	}
+	
+	public void deleteTimelineObject(TimelineObject to) {
+		to.playerProperties.clear();
 	}
 	
 	private void updateAudio(int msec) {
