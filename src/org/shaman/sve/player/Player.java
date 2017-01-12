@@ -160,8 +160,7 @@ public class Player {
 			if (pic != null) {
 				Image img = pic.computeFrame(currentTime, true);
 				if (img != null) {
-					ImageTimelineObject ito = (ImageTimelineObject) to;
-					g.drawImage(img, ito.getX(), ito.getY(), ito.getWidth(), ito.getHeight(), null);
+					pic.drawFrame(g, img, true);
 				}
 			}
 		}

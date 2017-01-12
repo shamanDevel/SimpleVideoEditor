@@ -44,7 +44,24 @@ public class PlayerImageControl {
 		return img;
 	}
 	
-	public void drawFrame(Graphics2D g, BufferedImage frame, boolean thumbnail) {
-		g.drawImage(frame, timelineObject.getX(), timelineObject.getY(), timelineObject.getWidth(), timelineObject.getHeight(), null);
+	public void drawFrame(Graphics2D g, Image frame, boolean thumbnail) {
+		int x = timelineObject.getX();
+		int y = timelineObject.getY();
+		int w = timelineObject.getWidth();
+		int h = timelineObject.getHeight();
+		if (timelineObject.isKeepAspectRatio()) {
+			//w,h defines a rect, place the image centered inside it
+			float aspect = w / (float) h;
+			if (aspect > timelineObject.getAspect()) {
+				// w is greater
+				w = (int) (h * timelineObject.getAspect());
+				x = (timelineObject.getWidth() - w) / 2;
+			} else if (aspect < timelineObject.getAspect()) {
+				// h is greater
+				h = (int) (w / timelineObject.getAspect());
+				y = (timelineObject.getHeight() - h) / 2;
+			}
+		}
+		g.drawImage(frame, x, y, w, h, null);
 	}
 }

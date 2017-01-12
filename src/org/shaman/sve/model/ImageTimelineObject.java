@@ -36,6 +36,13 @@ public class ImageTimelineObject<T extends Resource & Resource.ImageProvider> ex
 	private int height;
 	public static final String PROP_HEIGHT = "height";
 	
+	@Element
+	private boolean keepAspectRatio = true;
+	public static final String PROP_KEEP_ASPECT_RATIO = "aspect";
+	
+	@Element
+	private float aspect;
+	
 	public ImageTimelineObject() {
 	}
 
@@ -144,15 +151,13 @@ public class ImageTimelineObject<T extends Resource & Resource.ImageProvider> ex
 				public void undo() throws CannotUndoException {
 					super.undo();
 					width = oldWidth;
-					name = resource.getName();
 					propertyChangeSupport.firePropertyChange(PROP_WIDTH, newWidth, oldWidth);
 				}
 
 				@Override
 				public void redo() throws CannotRedoException {
 					super.redo();
-					height = newWidth;
-					name = resource.getName();
+					width = newWidth;
 					propertyChangeSupport.firePropertyChange(PROP_WIDTH, oldWidth, newWidth);
 				}
 			
@@ -183,7 +188,6 @@ public class ImageTimelineObject<T extends Resource & Resource.ImageProvider> ex
 				public void undo() throws CannotUndoException {
 					super.undo();
 					height = oldHeight;
-					name = resource.getName();
 					propertyChangeSupport.firePropertyChange(PROP_HEIGHT, newHeight, oldHeight);
 				}
 
@@ -191,11 +195,56 @@ public class ImageTimelineObject<T extends Resource & Resource.ImageProvider> ex
 				public void redo() throws CannotRedoException {
 					super.redo();
 					height = newHeight;
-					name = resource.getName();
 					propertyChangeSupport.firePropertyChange(PROP_HEIGHT, oldHeight, newHeight);
 				}
 			
 			});
 		}
 	}
+
+	/**
+	 * @return {@code true} if the aspect ration should be preserved
+	 */
+	public boolean isKeepAspectRatio() {
+		return keepAspectRatio;
+	}
+
+	/**
+	 * Sets if the aspect ration should be preserved on resizing
+	 * @param newAspect 
+	 */
+	public void setKeepAspectRatio(final boolean newAspect) {
+		final boolean oldAspect = this.keepAspectRatio;
+		this.keepAspectRatio = newAspect;
+		propertyChangeSupport.firePropertyChange(PROP_KEEP_ASPECT_RATIO, oldAspect, newAspect);
+		if (!Objects.equals(oldAspect, newAspect) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					keepAspectRatio = oldAspect;
+					propertyChangeSupport.firePropertyChange(PROP_KEEP_ASPECT_RATIO, newAspect, oldAspect);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					keepAspectRatio = newAspect;
+					propertyChangeSupport.firePropertyChange(PROP_KEEP_ASPECT_RATIO, oldAspect, newAspect);
+				}
+			
+			});
+		}
+	}
+
+	public float getAspect() {
+		return aspect;
+	}
+
+	public void setAspect(float apsect) {
+		this.aspect = apsect;
+	}
+	
+	
 }
