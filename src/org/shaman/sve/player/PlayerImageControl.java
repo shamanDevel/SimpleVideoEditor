@@ -42,7 +42,7 @@ public class PlayerImageControl {
 		int frame = ft.toFrames() - start.toFrames();
 		
 		BufferedImage img = ((Resource.ImageProvider) timelineObject.getResource()).getFrame(frame, thumbnail);
-		float thumbnailScale = ((Resource.ImageProvider) timelineObject.getResource()).getThumbnailScale();
+		float thumbnailScale = thumbnail ? ((Resource.ImageProvider) timelineObject.getResource()).getThumbnailScale() : 1;
 		//call filters
 		for (TimelineObject child : timelineObject.getChildren()) {
 			if (child instanceof AbstractImageFilter) {

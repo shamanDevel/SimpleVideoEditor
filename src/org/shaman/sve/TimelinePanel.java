@@ -107,6 +107,9 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 	@Override
 	public void propertyChange(PropertyChangeEvent pce) {
 		if (pce.getSource() == project) {
+			if (player.isRecording()) {
+				return;
+			}
 			switch (pce.getPropertyName()) {
 				case Project.PROP_LENGTH:
 				case Project.PROP_TIME:

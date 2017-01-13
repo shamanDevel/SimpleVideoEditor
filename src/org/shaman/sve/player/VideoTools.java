@@ -28,7 +28,7 @@ public class VideoTools {
 	private static final Logger LOG = Logger.getLogger(VideoTools.class.getName());
 	
 	private static final String FFMPEG_KEY = "ffmpeg";
-	private static File FFMPEG_FILE;
+	public static File FFMPEG_FILE;
 	public static final String AUDIO_SUFFIX = ".mp3";
 	public static final String IMAGES_SUFFIX = ".zip";
 	public static final String THUMBNAILS_SUFFIX = "_thumbs.zip";

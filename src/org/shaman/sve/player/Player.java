@@ -14,11 +14,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEditSupport;
 import net.beadsproject.beads.core.AudioContext;
 import net.beadsproject.beads.core.Bead;
-import net.beadsproject.beads.core.UGen;
 import net.beadsproject.beads.ugens.Clock;
 import net.beadsproject.beads.ugens.Gain;
 import org.shaman.sve.FrameTime;
@@ -49,6 +47,7 @@ public class Player implements PropertyChangeListener {
 	private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
 	private boolean playing;
+	private boolean recording;
 	private long playingStartTime;
 	private FrameTime playingStartFrame;
 	private FrameTime currentTime;
@@ -106,15 +105,23 @@ public class Player implements PropertyChangeListener {
 	public boolean isPlaying() {
 		return playing;
 	}
+
+	public boolean isRecording() {
+		return recording;
+	}
+	void setRecording(boolean recording) {
+		this.recording = recording;
+	}
 	
 	/**
 	 * Starts the playback
 	 */
-	public void start() {
+	public void start(boolean recording) {
 		if (playing) {
 			LOG.warning("player is already playing");
 			return;
 		}
+		this.recording = recording;
 		audioControls.clear();
 		for (TimelineObject obj : project.getTimelineObjects()) {
 			//todo: check if deactivated
@@ -170,8 +177,13 @@ public class Player implements PropertyChangeListener {
 		for (TimelineObject to : project.getTimelineObjects()) {
 			PlayerImageControl pic = (PlayerImageControl) to.playerProperties.get(IMAGE_CONTROL);
 			if (pic != null) {
-				Image img = pic.computeFrame(currentTime, true);
-				pic.drawFrame(g2d, img, true, selections.getSelectedTimelineObject()==to);
+				if (recording) {
+					Image img = pic.computeFrame(currentTime, false);
+					pic.drawFrame(g2d, img, false, false);
+				} else {
+					Image img = pic.computeFrame(currentTime, true);
+					pic.drawFrame(g2d, img, true, selections.getSelectedTimelineObject()==to);
+				}
 			}
 		}
 		
@@ -183,6 +195,14 @@ public class Player implements PropertyChangeListener {
 	 */
 	public void destroy() {
 		ac.stop();
+	}
+	
+	/**
+	 * Exports the project
+	 * @param target the target file
+	 */
+	public void export(File target) {
+		Exporter.exportProject(this, target);
 	}
 
 	@Override
@@ -256,6 +276,9 @@ public class Player implements PropertyChangeListener {
 				obj.playerProperties.put(IMAGE_CONTROL, pic);
 			}
 		}
+		for (TimelineObject child : to.getChildren()) {
+			initTimelineObject(child);
+		}
 	}
 	
 	public void deleteTimelineObject(TimelineObject to) {
@@ -263,14 +286,16 @@ public class Player implements PropertyChangeListener {
 	}
 	
 	private void updateAudio(int msec) {
-//		if (msec > project.getLength()) {
-//			stop();
-//			return;
-//		}
+		if (msec > project.getLength().toMillis() && recording) {
+			stop();
+			return;
+		}
 		for (PlayerAudioControl pac : audioControls) {
 			pac.updateAudio(msec);
 		}
-//		project.setTime(msec);
+		if (recording) {
+			project.setTime(project.getTime().fromMillis(msec));
+		}
 	}
 	
 	/**

@@ -89,7 +89,7 @@ public class TransparencyImageFilter extends AbstractImageFilter {
 			alpha = startTransparency + ((localTime - start) / (float)duration) * (endTransparency - startTransparency);
 		}
 		filter.alpha = alpha;
-		LOG.info("apply transparency filter with alpha="+alpha);
+//		LOG.info("apply transparency filter with alpha="+alpha);
 		return filter.filter(image, null);
 	}
 

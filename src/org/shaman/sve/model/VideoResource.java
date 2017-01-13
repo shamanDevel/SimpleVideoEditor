@@ -122,7 +122,7 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 			return thumbnails[Math.min(index, numFrames-1)];
 		} else {
 			try {
-				return videoTools.getFullResImage(Math.min(index, numFrames-1));
+				return VideoTools.ensureFormat(videoTools.getFullResImage(Math.min(index, numFrames-1)), BufferedImage.TYPE_INT_ARGB);
 			} catch (IOException ex) {
 				Logger.getLogger(VideoResource.class.getName()).log(Level.SEVERE, 
 						"unable to load high res frame with index "+index, ex);

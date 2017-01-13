@@ -129,6 +129,9 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 		if (player == null || project == null) {
 			return;
 		}
+		if (player.isRecording()) {
+			return;
+		}
 		//transform graphics to view the whole screen
 		int sw = contentPanel.getWidth();
 		int sh = contentPanel.getHeight();
@@ -252,7 +255,7 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 
     private void playEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playEvent
 		player.setTime(project.getTime());
-		player.start();
+		player.start(false);
     }//GEN-LAST:event_playEvent
 
     private void stopEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopEvent
@@ -298,6 +301,9 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == project) {
+			if (player.isRecording()) {
+				return;
+			}
 			switch (evt.getPropertyName()) {
 				case Project.PROP_LENGTH:
 					setTotalTime(project.getLength());

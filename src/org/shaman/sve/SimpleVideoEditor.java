@@ -20,6 +20,7 @@ import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
@@ -38,6 +39,8 @@ public class SimpleVideoEditor extends JFrame {
 
 	private static final Logger LOG = Logger.getLogger(SimpleVideoEditor.class.getName());
 	private static final String PROJECT_FILE_NAME = "project.xml";
+	
+	public static JFrame MAIN_FRAME;
 
 	//project
 	private Project project;
@@ -63,6 +66,7 @@ public class SimpleVideoEditor extends JFrame {
 	private UndoableEditSupport undoSupport;
 	
 	public SimpleVideoEditor() throws HeadlessException {
+		MAIN_FRAME = this;
 		getContentPane().setLayout(new BorderLayout());
 		
 		selections = new Selections();
@@ -275,6 +279,7 @@ public class SimpleVideoEditor extends JFrame {
 	private void projectLoaded() {
 		setTitle(project.getFolder().getAbsolutePath());
 		project.setTime(new FrameTime(project.getFramerate()));
+		exportProjectAction.setEnabled(true);
 		
 		//create dialog
 		JDialog dialog = new JDialog(SimpleVideoEditor.this, "Loading", true);
@@ -364,7 +369,20 @@ public class SimpleVideoEditor extends JFrame {
 		}
 	}
 	private void exportProject() {
-		
+		LOG.info("export project");
+		JFileChooser fc = new JFileChooser(Settings.get("EXPORT_FOLDER", Settings.getLastDirectory().getAbsolutePath()));
+		fc.setAcceptAllFileFilterUsed(true);
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		FileFilter f = new FileNameExtensionFilter("videos", "avi", "mp4", "mpeg", "mkv");
+		fc.addChoosableFileFilter(f);
+		fc.setFileFilter(f);
+		int ret = fc.showSaveDialog(this);
+		if (ret == JFileChooser.APPROVE_OPTION) {
+			Settings.set("EXPORT_FOLDER", fc.getCurrentDirectory().getAbsolutePath());
+			File target = fc.getSelectedFile();
+			LOG.log(Level.INFO, "export to {0}", target);
+			player.export(target);
+		}
 	}
 	
 	private void undo() {
