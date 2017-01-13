@@ -30,6 +30,8 @@ public class PlayerImageControl {
 	}
 	
 	public Image computeFrame(FrameTime ft, boolean thumbnail) {
+		if (!timelineObject.isEnabled()) return null;
+		
 		FrameTime start = ft.clone().fromMillis(timelineObject.getStart());
 		FrameTime end = ft.clone().fromMillis(timelineObject.getDuration()).addLocal(start);
 		if (start.compareTo(ft) > 0) {
@@ -52,6 +54,7 @@ public class PlayerImageControl {
 	}
 	
 	public void drawFrame(Graphics2D g, Image frame, boolean thumbnail, boolean selected) {
+		if (!timelineObject.isEnabled()) return;
 		Graphics2D g2d = (Graphics2D) g.create();
 		
 		if (frame != null) {
@@ -65,11 +68,11 @@ public class PlayerImageControl {
 				if (aspect > timelineObject.getAspect()) {
 					// w is greater
 					w = (int) (h * timelineObject.getAspect());
-					x = (timelineObject.getWidth() - w) / 2;
+					x += (timelineObject.getWidth() - w) / 2;
 				} else if (aspect < timelineObject.getAspect()) {
 					// h is greater
 					h = (int) (w / timelineObject.getAspect());
-					y = (timelineObject.getHeight() - h) / 2;
+					y += (timelineObject.getHeight() - h) / 2;
 				}
 			}
 			g2d.setClip(0, 0, player.getProject().getWidth(), player.getProject().getHeight());

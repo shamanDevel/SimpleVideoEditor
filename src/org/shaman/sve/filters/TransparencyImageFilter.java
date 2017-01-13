@@ -7,7 +7,11 @@ package org.shaman.sve.filters;
 
 import com.jhlabs.image.PointFilter;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 import java.util.logging.Logger;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import org.openide.util.lookup.ServiceProvider;
 import org.shaman.sve.FrameTime;
 import org.shaman.sve.model.ImageTimelineObject;
@@ -15,6 +19,8 @@ import org.shaman.sve.model.Resource;
 import org.shaman.sve.model.ResourceTimelineObject;
 import org.shaman.sve.model.TimelineObject;
 import org.simpleframework.xml.Element;
+
+import static org.shaman.sve.model.TimelineObject.PROP_NAME;
 
 /**
  *
@@ -99,12 +105,31 @@ public class TransparencyImageFilter extends AbstractImageFilter {
 	/**
 	 * Set the value of startTransparency
 	 *
-	 * @param startTransparency new value of startTransparency
+	 * @param newStartTransparency new value of startTransparency
 	 */
-	public void setStartTransparency(float startTransparency) {
-		float oldStartTransparency = this.startTransparency;
-		this.startTransparency = startTransparency;
-		propertyChangeSupport.firePropertyChange(PROP_START_TRANSPARENCY, oldStartTransparency, startTransparency);
+	public void setStartTransparency(final float newStartTransparency) {
+		final float oldStartTransparency = this.startTransparency;
+		this.startTransparency = newStartTransparency;
+		propertyChangeSupport.firePropertyChange(PROP_START_TRANSPARENCY, oldStartTransparency, newStartTransparency);
+		if (!Objects.equals(oldStartTransparency, newStartTransparency) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					startTransparency = oldStartTransparency;
+					propertyChangeSupport.firePropertyChange(PROP_START_TRANSPARENCY, newStartTransparency, oldStartTransparency);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					startTransparency = newStartTransparency;
+					propertyChangeSupport.firePropertyChange(PROP_START_TRANSPARENCY, oldStartTransparency, newStartTransparency);
+				}
+			
+			});
+		}
 	}
 
 	/**
@@ -119,12 +144,31 @@ public class TransparencyImageFilter extends AbstractImageFilter {
 	/**
 	 * Set the value of endTransparency
 	 *
-	 * @param endTransparency new value of endTransparency
+	 * @param newEndTransparency new value of endTransparency
 	 */
-	public void setEndTransparency(float endTransparency) {
-		float oldEndTransparency = this.endTransparency;
-		this.endTransparency = endTransparency;
-		propertyChangeSupport.firePropertyChange(PROP_END_TRANSPARENCY, oldEndTransparency, endTransparency);
+	public void setEndTransparency(final float newEndTransparency) {
+		final float oldEndTransparency = this.endTransparency;
+		this.endTransparency = newEndTransparency;
+		propertyChangeSupport.firePropertyChange(PROP_END_TRANSPARENCY, oldEndTransparency, newEndTransparency);
+		if (!Objects.equals(oldEndTransparency, newEndTransparency) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					endTransparency = oldEndTransparency;
+					propertyChangeSupport.firePropertyChange(PROP_END_TRANSPARENCY, newEndTransparency, oldEndTransparency);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					endTransparency = newEndTransparency;
+					propertyChangeSupport.firePropertyChange(PROP_END_TRANSPARENCY, oldEndTransparency, newEndTransparency);
+				}
+			
+			});
+		}
 	}
 
 	/**
@@ -140,12 +184,31 @@ public class TransparencyImageFilter extends AbstractImageFilter {
 	 * end of the filter (start+duration) and this flag is true, then
 	 * the filter is also applied beyond these bounds.
 	 * This works as if the current time is clipped to the bounds of the filter.
-	 * @param applyOverBorders 
+	 * @param newApplyOverBorders 
 	 */
-	public void setApplyOverBorders(boolean applyOverBorders) {
-		boolean oldApplyOverBorders = this.applyOverBorders;
-		this.applyOverBorders = applyOverBorders;
-		propertyChangeSupport.firePropertyChange(PROP_APPLYOVERBORDERS, oldApplyOverBorders, applyOverBorders);
+	public void setApplyOverBorders(final boolean newApplyOverBorders) {
+		final boolean oldApplyOverBorders = this.applyOverBorders;
+		this.applyOverBorders = newApplyOverBorders;
+		propertyChangeSupport.firePropertyChange(PROP_APPLYOVERBORDERS, oldApplyOverBorders, newApplyOverBorders);
+		if (!Objects.equals(oldApplyOverBorders, newApplyOverBorders) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					applyOverBorders = oldApplyOverBorders;
+					propertyChangeSupport.firePropertyChange(PROP_APPLYOVERBORDERS, newApplyOverBorders, oldApplyOverBorders);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					applyOverBorders = newApplyOverBorders;
+					propertyChangeSupport.firePropertyChange(PROP_APPLYOVERBORDERS, oldApplyOverBorders, newApplyOverBorders);
+				}
+			
+			});
+		}
 	}
 
 	@ServiceProvider(service = FilterFactory.class)

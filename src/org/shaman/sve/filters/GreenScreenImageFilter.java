@@ -8,7 +8,11 @@ package org.shaman.sve.filters;
 import com.jhlabs.image.PointFilter;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 import java.util.logging.Logger;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import org.openide.util.lookup.ServiceProvider;
 import org.shaman.sve.FrameTime;
 import org.shaman.sve.model.ImageTimelineObject;
@@ -16,6 +20,8 @@ import org.shaman.sve.model.Resource;
 import org.shaman.sve.model.ResourceTimelineObject;
 import org.shaman.sve.model.TimelineObject;
 import org.simpleframework.xml.Element;
+
+import static org.shaman.sve.model.TimelineObject.PROP_NAME;
 
 /**
  *
@@ -117,17 +123,42 @@ public class GreenScreenImageFilter extends AbstractImageFilter {
 		return keyColor;
 	}
 
+	private void updateCbCr() {
+		keyCb = rgb2cb(keyColor.getRed(), keyColor.getGreen(), keyColor.getBlue());
+		keyCr = rgb2cr(keyColor.getRed(), keyColor.getGreen(), keyColor.getBlue());
+	}
+	
 	/**
 	 * Set the value of keyColor
 	 *
-	 * @param keyColor new value of keyColor
+	 * @param newKeyColor new value of keyColor
 	 */
-	public void setKeyColor(Color keyColor) {
-		Color oldKeyColor = this.keyColor;
-		this.keyColor = keyColor;
-		propertyChangeSupport.firePropertyChange(PROP_KEYCOLOR, oldKeyColor, keyColor);
-		keyCb = rgb2cb(keyColor.getRed(), keyColor.getGreen(), keyColor.getBlue());
-		keyCr = rgb2cr(keyColor.getRed(), keyColor.getGreen(), keyColor.getBlue());
+	public void setKeyColor(final Color newKeyColor) {
+		final Color oldKeyColor = this.keyColor;
+		this.keyColor = newKeyColor;
+		propertyChangeSupport.firePropertyChange(PROP_KEYCOLOR, oldKeyColor, newKeyColor);
+		updateCbCr();
+		if (!Objects.equals(oldKeyColor, newKeyColor) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					keyColor = oldKeyColor;
+					updateCbCr();
+					propertyChangeSupport.firePropertyChange(PROP_KEYCOLOR, newKeyColor, oldKeyColor);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					keyColor = newKeyColor;
+					updateCbCr();
+					propertyChangeSupport.firePropertyChange(PROP_KEYCOLOR, oldKeyColor, newKeyColor);
+				}
+			
+			});
+		}
 	}
 
 	/**
@@ -142,12 +173,31 @@ public class GreenScreenImageFilter extends AbstractImageFilter {
 	/**
 	 * Set the value of tolA
 	 *
-	 * @param tolA new value of tolA
+	 * @param newTolA new value of tolA
 	 */
-	public void setTolA(int tolA) {
-		int oldTolA = this.tolA;
-		this.tolA = tolA;
-		propertyChangeSupport.firePropertyChange(PROP_TOL_A, oldTolA, tolA);
+	public void setTolA(final int newTolA) {
+		final int oldTolA = this.tolA;
+		this.tolA = newTolA;
+		propertyChangeSupport.firePropertyChange(PROP_TOL_A, oldTolA, newTolA);
+		if (!Objects.equals(oldTolA, newTolA) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					tolA = oldTolA;
+					propertyChangeSupport.firePropertyChange(PROP_TOL_A, newTolA, oldTolA);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					tolA = newTolA;
+					propertyChangeSupport.firePropertyChange(PROP_TOL_A, oldTolA, newTolA);
+				}
+			
+			});
+		}
 	}
 
 	/**
@@ -162,12 +212,31 @@ public class GreenScreenImageFilter extends AbstractImageFilter {
 	/**
 	 * Set the value of tolB
 	 *
-	 * @param tolB new value of tolB
+	 * @param newTolB new value of tolB
 	 */
-	public void setTolB(int tolB) {
-		int oldTolB = this.tolB;
-		this.tolB = tolB;
-		propertyChangeSupport.firePropertyChange(PROP_TOL_B, oldTolB, tolB);
+	public void setTolB(final int newTolB) {
+		final int oldTolB = this.tolB;
+		this.tolB = newTolB;
+		propertyChangeSupport.firePropertyChange(PROP_TOL_B, oldTolB, newTolB);
+		if (!Objects.equals(oldTolB, newTolB) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					tolB = oldTolB;
+					propertyChangeSupport.firePropertyChange(PROP_TOL_B, newTolB, oldTolB);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					tolB = newTolB;
+					propertyChangeSupport.firePropertyChange(PROP_TOL_B, oldTolB, newTolB);
+				}
+			
+			});
+		}
 	}
 
 	@Override

@@ -59,6 +59,7 @@ public class PlayerAudioControl {
 	}
 	
 	public void start() {
+		if (!timelineObject.isEnabled()) return;
 		start = timelineObject.getStart();
 		if (pos >= 0) {
 			samplePlayer.start(pos);
@@ -69,6 +70,7 @@ public class PlayerAudioControl {
 	}
 	
 	public void updateAudio(float timeMsec) {
+		if (!timelineObject.isEnabled()) return;
 		float npos = timeMsec - start;
 		if (npos >= 0 && !running) {
 			samplePlayer.start(pos);
