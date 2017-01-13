@@ -174,6 +174,7 @@ public class Project {
 	}
 	
 	public void addTimelineObject(TimelineObject obj) {
+		assert(obj != null);
 		timelineObjects.add(obj);
 		propertyChangeSupport.firePropertyChange(PROP_TIMELINE_OBJECT_ADDED, null, obj);
 		fireTimelineObjectsChanged();

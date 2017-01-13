@@ -268,6 +268,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 		if (res instanceof AudioResource) {
 			AudioTimelineObject o = new AudioTimelineObject((AudioResource) res);
 			o.setDuration((int)Math.ceil(((AudioResource)res).getSample().getLength()));
+			obj = o;
 		} else if (res instanceof Resource.ImageProvider) {
 			ImageTimelineObject o = new ImageTimelineObject(res);
 			BufferedImage i = ((Resource.ImageProvider) res).getFrame(0, false);

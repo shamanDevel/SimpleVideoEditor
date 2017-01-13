@@ -81,7 +81,7 @@ public class Exporter extends SwingWorker<Void, Void> {
 		if (!outputFolder.exists()) {
 			outputFolder.mkdir();
 		}
-//		FileUtils.cleanDirectory(outputFolder);
+		FileUtils.cleanDirectory(outputFolder);
 		LOG.info("output folder cleaned");
 		
 		FrameTime ft = new FrameTime(project.getFramerate());
@@ -107,11 +107,12 @@ public class Exporter extends SwingWorker<Void, Void> {
 		//write audio
 		setMessage("write audio");
 		setProgress(2, 0);
-		Sample targetSample = new Sample(project.getLength().toMillis(), 2, 96000);
-		RecordToSample rts = new RecordToSample(player.getAudioContext(), targetSample, RecordToSample.Mode.FINITE);
+		Sample targetSample = new Sample(project.getLength().toMillis(), 2, 44100);
+		RecordToSample rts = new RecordToSample(player.getAudioContext(), targetSample, RecordToSample.Mode.INFINITE);
 		ft.fromMillis(0);
 		player.setTime(ft);
 		player.getAudioContext().out.addDependent(rts);
+		rts.addInput(player.getAudioContext().out);
 		final Object barrier = new Object();
 		PropertyChangeListener pcl = new PropertyChangeListener() {
 
@@ -137,10 +138,12 @@ public class Exporter extends SwingWorker<Void, Void> {
 			barrier.wait();
 		}
 		player.removePropertyChangeListener(pcl);
-		rts.pause(true);
 		player.getAudioContext().out.removeDependent(rts);
+		rts.pause(true);
+		rts.kill();
 		rts.clip();
-		SampleAudioFormat af = new SampleAudioFormat(96000.0f, 16, 2, true, true);
+		targetSample = rts.getSample();
+		SampleAudioFormat af = new SampleAudioFormat(44100.0f, 16, 2, true, true);
 		targetSample.write(outputFolder.getAbsolutePath()+File.separator+"audio.wav", AudioFileType.WAV, af);
 		LOG.info("audio created");
 		
