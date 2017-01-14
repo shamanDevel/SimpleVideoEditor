@@ -20,7 +20,7 @@ import org.shaman.sve.model.TimelineObject;
 import org.simpleframework.xml.Element;
 
 
-public class CropImageFilter extends AbstractImageFilter {
+public class CropImageFilter extends AbstractImageFilter implements CloneableFilter {
 
 	@Element
 	private int cropLeft;
@@ -208,6 +208,14 @@ public class CropImageFilter extends AbstractImageFilter {
 			
 			});
 		}
+	}
+
+	@Override
+	public TimelineObject cloneForParent(TimelineObject parent) {
+		CropImageFilter f = new CropImageFilter(parent, cropLeft, cropRight, cropTop, cropBottom);
+		f.setName(name);
+		f.setDuration(parent.getDuration());
+		return f;
 	}
 
 	private static class CropFilter extends PointFilter {

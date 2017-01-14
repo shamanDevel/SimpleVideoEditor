@@ -73,7 +73,7 @@ public class PlayerAudioControl {
 		if (!timelineObject.isEnabled()) return;
 		float npos = timeMsec - start;
 		if (npos >= 0 && !running && npos<=sample.getLength()) {
-			samplePlayer.start(pos);
+			samplePlayer.start(npos);
 			running = true;
 			LOG.log(Level.INFO, "{0} started", timelineObject);
 		} else if (npos > sample.getLength() && running) {

@@ -24,7 +24,7 @@ import org.simpleframework.xml.Element;
  *
  * @author Sebastian Weiss
  */
-public class TransparencyImageFilter extends AbstractImageFilter {
+public class TransparencyImageFilter extends AbstractImageFilter implements CloneableFilter {
 	private static final Logger LOG = Logger.getLogger(TransparencyImageFilter.class.getName());
 
 	@Element
@@ -207,6 +207,15 @@ public class TransparencyImageFilter extends AbstractImageFilter {
 			
 			});
 		}
+	}
+
+	@Override
+	public TimelineObject cloneForParent(TimelineObject parent) {
+		TransparencyImageFilter f = new TransparencyImageFilter(parent, startTransparency, endTransparency, applyOverBorders);
+		f.setStart(start);
+		f.setDuration(duration);
+		f.setName(name);
+		return f;
 	}
 
 	@ServiceProvider(service = FilterFactory.class)

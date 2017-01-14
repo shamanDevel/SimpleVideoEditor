@@ -33,6 +33,7 @@ import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 import org.openide.util.Lookup;
+import org.shaman.sve.filters.CloneableFilter;
 import org.shaman.sve.filters.FilterFactory;
 import org.shaman.sve.model.*;
 
@@ -50,6 +51,7 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 	
 	private JXTreeTable table;
 	private TimelineTreeTableModel tableModel;
+	private CloneableFilter selectedFilter;
 	
 	/**
 	 * Creates new form TimelinePanel
@@ -361,6 +363,9 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 	private void addFilter(final ResourceTimelineObject<Resource> obj, FilterFactory factory) {
 		final TimelineObject child = factory.createFilter(obj);
 		obj.addChild(child);
+		addFilter(obj, child);
+	}
+	private void addFilter(final TimelineObject obj, final TimelineObject child) {
 		tableModel.fireUpdate();
 		LOG.log(Level.INFO, "filter {0} added to {1}", new Object[]{child, obj});
 		undoSupport.postEdit(new AbstractUndoableEdit(){
@@ -384,57 +389,74 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 	private void triggerPopup(TimelineObject tobj, Point mouse) {
 		LOG.info("trigger popup on "+tobj);
 		//until now, filters can only be applied to resources
-		if (!(tobj instanceof ResourceTimelineObject)) return;
-		@SuppressWarnings("unchecked")
-		final ResourceTimelineObject<Resource> obj = (ResourceTimelineObject<Resource>) tobj;
-		//test which filters can be applied
-		ArrayList<FilterFactory> factories = new ArrayList<>();
-		for (FilterFactory f : Lookup.getDefault().lookupAll(FilterFactory.class)) {
-			if (f.isApplicable(obj)) {
-				factories.add(f);
-			}
-		}
-		Collections.sort(factories, new Comparator<FilterFactory>() {
-			@Override
-			public int compare(FilterFactory o1, FilterFactory o2) {
-				return o1.getName().compareTo(o2.getName());
-			}
-		});
-		//build menu
-		JPopupMenu popup = new JPopupMenu();
-		Map<String, JMenu> items = new HashMap<>();
-		for (final FilterFactory f : factories) {
-			JMenu parent = null;
-			int index = 0;
-			while (index != -1) {
-				index = f.getName().indexOf('/', index);
-				if (index != -1) {
-					String prefix = f.getName().substring(0, index);
-					index++;
-					JMenu item = items.get(prefix);
-					if (item == null) {
-						item = new JMenu(prefix.substring(prefix.lastIndexOf('/')+1));
-						items.put(prefix, item);
-						if (parent != null) {
-							parent.add(item);
-						} else {
-							popup.add(item);
-						}
-					}
-					parent = item;
+		if (tobj instanceof ResourceTimelineObject) {
+			@SuppressWarnings("unchecked")
+			final ResourceTimelineObject<Resource> obj = (ResourceTimelineObject<Resource>) tobj;
+			//test which filters can be applied
+			ArrayList<FilterFactory> factories = new ArrayList<>();
+			for (FilterFactory f : Lookup.getDefault().lookupAll(FilterFactory.class)) {
+				if (f.isApplicable(obj)) {
+					factories.add(f);
 				}
 			}
-			String name = f.getName().substring(f.getName().lastIndexOf('/')+1);
-			JMenuItem item = new JMenuItem(name);
-			parent.add(item);
-			item.addActionListener(new ActionListener() {
+			Collections.sort(factories, new Comparator<FilterFactory>() {
 				@Override
-				public void actionPerformed(ActionEvent e) {
-					addFilter(obj, f);
+				public int compare(FilterFactory o1, FilterFactory o2) {
+					return o1.getName().compareTo(o2.getName());
 				}
 			});
+			//build menu
+			JPopupMenu popup = new JPopupMenu();
+			if (selectedFilter != null) {
+				JMenuItem pasteItem = new JMenuItem("paste: "+selectedFilter.toString());
+				pasteItem.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						TimelineObject child = selectedFilter.cloneForParent(obj);
+						obj.addChild(child);
+						addFilter(obj, child);
+					}
+				});
+				popup.add(pasteItem);
+			}
+			Map<String, JMenu> items = new HashMap<>();
+			for (final FilterFactory f : factories) {
+				JMenu parent = null;
+				int index = 0;
+				while (index != -1) {
+					index = f.getName().indexOf('/', index);
+					if (index != -1) {
+						String prefix = f.getName().substring(0, index);
+						index++;
+						JMenu item = items.get(prefix);
+						if (item == null) {
+							item = new JMenu(prefix.substring(prefix.lastIndexOf('/')+1));
+							items.put(prefix, item);
+							if (parent != null) {
+								parent.add(item);
+							} else {
+								popup.add(item);
+							}
+						}
+						parent = item;
+					}
+				}
+				String name = f.getName().substring(f.getName().lastIndexOf('/')+1);
+				JMenuItem item = new JMenuItem(name);
+				parent.add(item);
+				item.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						addFilter(obj, f);
+					}
+				});
+			}
+			popup.show(table, mouse.x, mouse.y);
 		}
-		popup.show(table, mouse.x, mouse.y);
+		else if (tobj instanceof CloneableFilter) {
+			selectedFilter = (CloneableFilter) tobj;
+			LOG.info(tobj+" copied");
+		}
 	}
 
 	/**

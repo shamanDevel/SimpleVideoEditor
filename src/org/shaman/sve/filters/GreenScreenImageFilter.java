@@ -21,13 +21,11 @@ import org.shaman.sve.model.ResourceTimelineObject;
 import org.shaman.sve.model.TimelineObject;
 import org.simpleframework.xml.Element;
 
-import static org.shaman.sve.model.TimelineObject.PROP_NAME;
-
 /**
  *
  * @author Sebastian Weiss
  */
-public class GreenScreenImageFilter extends AbstractImageFilter {
+public class GreenScreenImageFilter extends AbstractImageFilter implements CloneableFilter {
 	private static final Logger LOG = Logger.getLogger(GreenScreenImageFilter.class.getName());
 
 	/**
@@ -242,6 +240,14 @@ public class GreenScreenImageFilter extends AbstractImageFilter {
 	@Override
 	public BufferedImage process(BufferedImage image, FrameTime frameTime, boolean thumbnail, float thumbnailScale) {
 		return filter.filter(image, null);
+	}
+	
+	@Override
+	public TimelineObject cloneForParent(TimelineObject parent) {
+		GreenScreenImageFilter f = new GreenScreenImageFilter(parent, keyColor, tolA, tolB);
+		f.setName(name);
+		f.setDuration(parent.getDuration());
+		return f;
 	}
 	
 	@ServiceProvider(service = FilterFactory.class)

@@ -21,7 +21,7 @@ import org.simpleframework.xml.Element;
  *
  * @author Sebastian Weiss
  */
-public class GainAudioFilter extends TimelineObject {
+public class GainAudioFilter extends TimelineObject implements CloneableFilter {
 	
 	@Element
 	private float startGain;
@@ -191,6 +191,15 @@ public class GainAudioFilter extends TimelineObject {
 			alpha = startGain + ((localTime - start) / (float)duration) * (endGain - startGain);
 		}
 		return gain * alpha;
+	}
+
+	@Override
+	public TimelineObject cloneForParent(TimelineObject parent) {
+		GainAudioFilter f = new GainAudioFilter(parent, startGain, endGain, applyOverBorders);
+		f.setStart(start);
+		f.setDuration(duration);
+		f.setName(name);
+		return f;
 	}
 	
 	@ServiceProvider(service = FilterFactory.class)

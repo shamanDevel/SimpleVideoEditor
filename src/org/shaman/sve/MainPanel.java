@@ -79,10 +79,10 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 		timeSlider.setEnabled(!playing);
 		aSpinner.setEnabled(!playing);
 		gotoAButton.setEnabled(!playing);
-		setAButton.setEnabled(!playing);
+//		setAButton.setEnabled(!playing);
 		bSpinner.setEnabled(!playing);
 		gotoBButton.setEnabled(!playing);
-		setBButton.setEnabled(!playing);
+//		setBButton.setEnabled(!playing);
 	}
 	
 	/**
