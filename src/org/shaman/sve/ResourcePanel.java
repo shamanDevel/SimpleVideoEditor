@@ -285,7 +285,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 			}
 			//create resource
 			final AudioResource res = new AudioResource(RESOURCE_FOLDER + "/" + AUDIO_FOLDER + "/" + audioFile.getName());
-			project.getResources().add(res);
+			project.addResource(res);
 			listModel.addElement(res);
 			LOG.info("audio file copied and resource added");
 			//add undo support
@@ -341,7 +341,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 			}
 			//create resource
 			final ImageResource res = new ImageResource(RESOURCE_FOLDER + "/" + IMAGE_FOLDER + "/" + imageFile.getName());
-			project.getResources().add(res);
+			project.addResource(res);
 			listModel.addElement(res);
 			LOG.info("image file copied and resource added");
 			//add undo support
@@ -385,6 +385,12 @@ public class ResourcePanel extends javax.swing.JPanel {
 			final File videoFile = fc.getSelectedFile();
 			final String baseName = FilenameUtils.getBaseName(videoFile.getName());
 			
+			//get start time
+			String startTime = JOptionPane.showInputDialog(this, "Start time", "00:00:00.0");
+			if (startTime == null) {
+				startTime = "00:00:00.0";
+			}
+			
 			//copy file to resource folder
 			File resourceFolder = new File(project.getFolder(), RESOURCE_FOLDER);
 			if (!resourceFolder.exists()) resourceFolder.mkdir();
@@ -392,7 +398,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 			if (!videoFolder.exists()) videoFolder.mkdir();
 			
 			try {
-				VideoTools.copyVideoIntoProject(videoFile, videoFolder, baseName, project.getFramerate());
+				VideoTools.copyVideoIntoProject(videoFile, videoFolder, baseName, project.getFramerate(), startTime);
 			} catch (IOException | InterruptedException ex) {
 				Logger.getLogger(ResourcePanel.class.getName()).log(Level.SEVERE, null, ex);
 				return;

@@ -147,11 +147,12 @@ public class VideoTools {
 		}
 	}
 	
-	public static void copyVideoIntoProject(File videoFile, File directory, String baseName, int framerate) throws IOException, InterruptedException {
+	public static void copyVideoIntoProject(File videoFile, File directory, String baseName, int framerate, String startTime) throws IOException, InterruptedException {
 		String root = directory.getAbsolutePath() + File.separator + baseName;
 		//call ffmpeg to extract frames
 		String[] args = {
 			FFMPEG_FILE.getAbsolutePath(),
+			"-ss", startTime,
 			"-i", videoFile.getAbsolutePath(),
 			"-r", String.valueOf(framerate),
 			"-n",
@@ -197,6 +198,7 @@ public class VideoTools {
 		//call ffmpeg to extract audio
 		args = new String[]{
 			FFMPEG_FILE.getAbsolutePath(),
+			"-ss", startTime,
 			"-i", videoFile.getAbsolutePath(),
 			"-n",
 			root + AUDIO_SUFFIX
