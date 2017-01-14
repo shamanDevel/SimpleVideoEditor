@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import net.beadsproject.beads.data.Sample;
 import net.beadsproject.beads.ugens.Gain;
 import net.beadsproject.beads.ugens.SamplePlayer;
+import org.shaman.sve.filters.GainAudioFilter;
 import org.shaman.sve.model.*;
 
 /**
@@ -24,6 +25,7 @@ public class PlayerAudioControl {
 	private final ResourceTimelineObject timelineObject;
 	private final Player player;
 
+	private Sample sample;
 	private SamplePlayer samplePlayer;
 	private Gain gain;
 	private float pos;
@@ -33,9 +35,7 @@ public class PlayerAudioControl {
 	public PlayerAudioControl(ResourceTimelineObject<? extends Resource> timelineObject, Player player) {
 		this.timelineObject = timelineObject;
 		this.player = player;
-		
-		Sample sample = null;
-		
+
 		Resource res = timelineObject.getResource();
 		if (res instanceof AudioResource) {
 			sample = ((AudioResource) res).getSample();
@@ -72,11 +72,23 @@ public class PlayerAudioControl {
 	public void updateAudio(float timeMsec) {
 		if (!timelineObject.isEnabled()) return;
 		float npos = timeMsec - start;
-		if (npos >= 0 && !running) {
+		if (npos >= 0 && !running && npos<=sample.getLength()) {
 			samplePlayer.start(pos);
 			running = true;
 			LOG.log(Level.INFO, "{0} started", timelineObject);
+		} else if (npos > sample.getLength() && running) {
+			running = false;
+			LOG.log(Level.INFO, "{0} reached the end", timelineObject);
+			return;
 		}
+		//update filters
+		float gainValue = 1;
+		for (TimelineObject child : timelineObject.getChildren()) {
+			if (child instanceof GainAudioFilter) {
+				gainValue = ((GainAudioFilter) child).getGain(gainValue, (int) timeMsec);
+			}
+		}
+		gain.setGain(gainValue);
 	}
 	
 	public void stop() {

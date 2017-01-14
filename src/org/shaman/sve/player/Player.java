@@ -32,8 +32,8 @@ public class Player implements PropertyChangeListener {
 	private static final Logger LOG = Logger.getLogger(Player.class.getName());
 	
 	private static final int AUDIO_CLOCK_RESOLUTION = 10; //every 10 msec
-	private static final String AUDIO_CONTROL = "audioControl";
-	private static final String IMAGE_CONTROL = "imageControl";
+	public static final String AUDIO_CONTROL = "audioControl";
+	public static final String IMAGE_CONTROL = "imageControl";
 	
 	public static final String PROP_PLAYING = "playing";
 	

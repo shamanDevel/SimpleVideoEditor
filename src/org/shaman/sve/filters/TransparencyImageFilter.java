@@ -20,8 +20,6 @@ import org.shaman.sve.model.ResourceTimelineObject;
 import org.shaman.sve.model.TimelineObject;
 import org.simpleframework.xml.Element;
 
-import static org.shaman.sve.model.TimelineObject.PROP_NAME;
-
 /**
  *
  * @author Sebastian Weiss
