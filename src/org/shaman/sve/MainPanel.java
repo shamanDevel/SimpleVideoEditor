@@ -77,6 +77,12 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 		playButton.setEnabled(!playing);
 		timeSpinner.setEnabled(!playing);
 		timeSlider.setEnabled(!playing);
+		aSpinner.setEnabled(!playing);
+		gotoAButton.setEnabled(!playing);
+		setAButton.setEnabled(!playing);
+		bSpinner.setEnabled(!playing);
+		gotoBButton.setEnabled(!playing);
+		setBButton.setEnabled(!playing);
 	}
 	
 	/**
@@ -93,6 +99,8 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 		
 		timeLabel.setText("/ "+msec+" s");
 		timeSpinner.setModel(currentTime.getSpinnerModel(new FrameTime(project.getFramerate()).fromMillis(0), msec));
+		aSpinner.setModel(project.getMarkerA().getSpinnerModel(new FrameTime(project.getFramerate()).fromMillis(0), msec));
+		bSpinner.setModel(project.getMarkerB().getSpinnerModel(new FrameTime(project.getFramerate()).fromMillis(0), msec));
 		timeSlider.setMinimum(0);
 		timeSlider.setMaximum(msec.toMillis());
 		timeSlider.setValue(currentTime.toMillis());
@@ -169,6 +177,14 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
         timeSpinner = new javax.swing.JSpinner();
         timeLabel = new javax.swing.JLabel();
         timeSlider = new javax.swing.JSlider();
+        jLabel2 = new javax.swing.JLabel();
+        aSpinner = new javax.swing.JSpinner();
+        setAButton = new javax.swing.JButton();
+        gotoAButton = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        bSpinner = new javax.swing.JSpinner();
+        setBButton = new javax.swing.JButton();
+        gotoBButton = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         setMinimumSize(new java.awt.Dimension(400, 300));
@@ -181,7 +197,7 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
         );
         contentPanelLayout.setVerticalGroup(
             contentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 367, Short.MAX_VALUE)
+            .addGap(0, 336, Short.MAX_VALUE)
         );
 
         playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/shaman/sve/icons/play16.png"))); // NOI18N
@@ -219,23 +235,92 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
             }
         });
 
+        jLabel2.setText("A:");
+
+        aSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(10)));
+        aSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                aSpinnerChanged(evt);
+            }
+        });
+
+        setAButton.setText("Set");
+        setAButton.setToolTipText("Sets the first marker");
+        setAButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                setAEvent(evt);
+            }
+        });
+
+        gotoAButton.setText("GoTo");
+        gotoAButton.setToolTipText("go to marker A");
+        gotoAButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gotoAEvent(evt);
+            }
+        });
+
+        jLabel3.setText("B:");
+
+        bSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(10)));
+        bSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                bSpinnerChanged(evt);
+            }
+        });
+
+        setBButton.setText("Set");
+        setBButton.setToolTipText("Sets the first marker");
+        setBButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                setBButtonsetAEvent(evt);
+            }
+        });
+
+        gotoBButton.setText("GoTo");
+        gotoBButton.setToolTipText("go to marker A");
+        gotoBButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gotoBButtongotoAEvent(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(contentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(playButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(stopButton)
-                .addGap(2, 2, 2)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(timeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(timeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(timeSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(aSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(setAButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(gotoAButton)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(bSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(setBButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(gotoBButton)
+                        .addGap(0, 91, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(playButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(stopButton)
+                        .addGap(2, 2, 2)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(timeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(timeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(timeSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -243,13 +328,23 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
             .addGroup(layout.createSequentialGroup()
                 .addComponent(contentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(playButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(stopButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(timeSpinner)
-                    .addComponent(timeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(timeSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(playButton)
+                    .addComponent(stopButton)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(timeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(timeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(timeSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(aSpinner)
+                    .addComponent(setAButton)
+                    .addComponent(gotoAButton)
+                    .addComponent(jLabel3)
+                    .addComponent(bSpinner)
+                    .addComponent(setBButton)
+                    .addComponent(gotoBButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -287,11 +382,51 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 		changeCurrentTime(ft);
     }//GEN-LAST:event_timeSliderChanged
 
+    private void aSpinnerChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_aSpinnerChanged
+        FrameTime ft = (FrameTime) aSpinner.getValue();
+		if (ft.equals(project.getMarkerA())) {
+			return;
+		}
+		project.setMarkerA(ft);
+    }//GEN-LAST:event_aSpinnerChanged
+
+    private void setAEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setAEvent
+        project.setMarkerA(project.getTime().clone());
+    }//GEN-LAST:event_setAEvent
+
+    private void gotoAEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gotoAEvent
+        changeCurrentTime(project.getMarkerA().clone());
+    }//GEN-LAST:event_gotoAEvent
+
+    private void bSpinnerChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_bSpinnerChanged
+        FrameTime ft = (FrameTime) bSpinner.getValue();
+		if (ft.equals(project.getMarkerB())) {
+			return;
+		}
+		project.setMarkerB(ft);
+    }//GEN-LAST:event_bSpinnerChanged
+
+    private void setBButtonsetAEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setBButtonsetAEvent
+        project.setMarkerB(project.getTime().clone());
+    }//GEN-LAST:event_setBButtonsetAEvent
+
+    private void gotoBButtongotoAEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gotoBButtongotoAEvent
+        changeCurrentTime(project.getMarkerB().clone());
+    }//GEN-LAST:event_gotoBButtongotoAEvent
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JSpinner aSpinner;
+    private javax.swing.JSpinner bSpinner;
     private javax.swing.JPanel contentPanel;
+    private javax.swing.JButton gotoAButton;
+    private javax.swing.JButton gotoBButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JButton playButton;
+    private javax.swing.JButton setAButton;
+    private javax.swing.JButton setBButton;
     private javax.swing.JButton stopButton;
     private javax.swing.JLabel timeLabel;
     private javax.swing.JSlider timeSlider;
@@ -311,6 +446,11 @@ public class MainPanel extends javax.swing.JPanel implements PropertyChangeListe
 				case Project.PROP_TIME:
 					setCurrentTime(project.getTime());
 					break;
+				case Project.PROP_MARKER_A:
+					aSpinner.setValue(project.getMarkerA().clone());
+					break;
+				case Project.PROP_MARKER_B:
+					bSpinner.setValue(project.getMarkerB().clone());
 			}
 		} else if (evt.getSource() == player) {
 			switch (evt.getPropertyName()) {

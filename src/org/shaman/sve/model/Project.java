@@ -10,6 +10,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Objects;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEditSupport;
 import org.shaman.sve.FrameTime;
 import org.simpleframework.xml.*;
 
@@ -35,6 +40,13 @@ public class Project {
 	@Element
 	private int height;
 	
+	@Element
+	private FrameTime markerA;
+	public static final String PROP_MARKER_A = "markerA";
+	@Element
+	private FrameTime markerB;
+	public static final String PROP_MARKER_B = "markerB";
+	
 	@ElementList
 	private ArrayList<Resource> resources = new ArrayList<>();
 	
@@ -57,7 +69,13 @@ public class Project {
 	public static final String PROP_RESOURCE_ADDED = "res+";
 	public static final String PROP_RESOURCE_REMOVED = "res-";
 	
+	private UndoableEditSupport undoSupport;
+	
 	public Project() {
+	}
+
+	public void setUndoSupport(UndoableEditSupport undoSupport) {
+		this.undoSupport = undoSupport;
 	}
 
 	/**
@@ -108,6 +126,8 @@ public class Project {
 
 	public void setFramerate(int framerate) {
 		this.framerate = framerate;
+		markerA = new FrameTime(framerate);
+		markerB = new FrameTime(framerate);
 	}
 
 	public int getWidth() {
@@ -241,6 +261,78 @@ public class Project {
 		FrameTime oldLength = this.length;
 		this.length = length;
 		propertyChangeSupport.firePropertyChange(PROP_LENGTH, oldLength, length);
+	}
+	
+	/**
+	 * @return the first marker (a clone)
+	 */
+	public FrameTime getMarkerA() {
+		return markerA.clone();
+	}
+	
+	/**
+	 * Sets the first marker
+	 * @param newMarkerA 
+	 */
+	public void setMarkerA(final FrameTime newMarkerA) {
+		final FrameTime oldMarkerA = markerA;
+		markerA = newMarkerA;
+		propertyChangeSupport.firePropertyChange(PROP_MARKER_A, oldMarkerA, newMarkerA);
+		if (!Objects.equals(oldMarkerA, newMarkerA) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					markerA = oldMarkerA.clone();
+					propertyChangeSupport.firePropertyChange(PROP_MARKER_A, newMarkerA, oldMarkerA);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					markerA = newMarkerA.clone();
+					propertyChangeSupport.firePropertyChange(PROP_MARKER_A, oldMarkerA, newMarkerA);
+				}
+			
+			});
+		}
+	}
+	
+	/**
+	 * @return the first marker (a clone)
+	 */
+	public FrameTime getMarkerB() {
+		return markerB.clone();
+	}
+	
+	/**
+	 * Sets the first marker
+	 * @param newMarkerB
+	 */
+	public void setMarkerB(final FrameTime newMarkerB) {
+		final FrameTime oldMarkerB = markerB;
+		markerB = newMarkerB;
+		propertyChangeSupport.firePropertyChange(PROP_MARKER_B, oldMarkerB, newMarkerB);
+		if (!Objects.equals(oldMarkerB, newMarkerB) && undoSupport != null) {
+			undoSupport.postEdit(new AbstractUndoableEdit() {
+
+				@Override
+				public void undo() throws CannotUndoException {
+					super.undo();
+					markerB = oldMarkerB.clone();
+					propertyChangeSupport.firePropertyChange(PROP_MARKER_B, newMarkerB, oldMarkerB);
+				}
+
+				@Override
+				public void redo() throws CannotRedoException {
+					super.redo();
+					markerB = newMarkerB.clone();
+					propertyChangeSupport.firePropertyChange(PROP_MARKER_B, oldMarkerB, newMarkerB);
+				}
+			
+			});
+		}
 	}
 
 	@Override

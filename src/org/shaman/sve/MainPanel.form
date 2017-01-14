@@ -28,17 +28,39 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="contentPanel" max="32767" attributes="0"/>
           <Group type="102" attributes="0">
-              <Component id="playButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="stopButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
-              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="timeSpinner" min="-2" pref="80" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="timeLabel" min="-2" pref="80" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="timeSlider" pref="228" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="aSpinner" min="-2" pref="80" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="setAButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="gotoAButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="bSpinner" min="-2" pref="80" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="setBButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="gotoBButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="91" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="playButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="stopButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="timeSpinner" min="-2" pref="80" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="timeLabel" min="-2" pref="80" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="timeSlider" pref="228" max="32767" attributes="0"/>
+                  </Group>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -47,14 +69,25 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="contentPanel" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="playButton" alignment="0" max="32767" attributes="0"/>
-                  <Component id="stopButton" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jLabel1" alignment="0" max="32767" attributes="0"/>
-                  <Component id="timeSpinner" alignment="0" max="32767" attributes="0"/>
-                  <Component id="timeLabel" alignment="1" max="32767" attributes="0"/>
-                  <Component id="timeSlider" alignment="0" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="playButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="stopButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel1" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                  <Component id="timeSpinner" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                  <Component id="timeLabel" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+                  <Component id="timeSlider" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="aSpinner" alignment="3" max="32767" attributes="0"/>
+                  <Component id="setAButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="gotoAButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="bSpinner" alignment="3" max="32767" attributes="0"/>
+                  <Component id="setBButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="gotoBButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -74,7 +107,7 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="367" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="336" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -128,6 +161,72 @@
       </Properties>
       <Events>
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="timeSliderChanged"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel2">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="A:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSpinner" name="aSpinner">
+      <Properties>
+        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+          <SpinnerModel initial="0" minimum="0" numberType="java.lang.Integer" stepSize="10" type="number"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="aSpinnerChanged"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="setAButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Set"/>
+        <Property name="toolTipText" type="java.lang.String" value="Sets the first marker"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="setAEvent"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="gotoAButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="GoTo"/>
+        <Property name="toolTipText" type="java.lang.String" value="go to marker A"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="gotoAEvent"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel3">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="B:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSpinner" name="bSpinner">
+      <Properties>
+        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+          <SpinnerModel initial="0" minimum="0" numberType="java.lang.Integer" stepSize="10" type="number"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="bSpinnerChanged"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="setBButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Set"/>
+        <Property name="toolTipText" type="java.lang.String" value="Sets the first marker"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="setBButtonsetAEvent"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="gotoBButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="GoTo"/>
+        <Property name="toolTipText" type="java.lang.String" value="go to marker A"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="gotoBButtongotoAEvent"/>
       </Events>
     </Component>
   </SubComponents>

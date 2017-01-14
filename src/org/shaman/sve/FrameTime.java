@@ -28,8 +28,7 @@ public final class FrameTime implements Comparable<FrameTime>, Cloneable {
 	@Element
 	private int frame;
 	
-	//non-persistent
-	
+	@Element
 	private int framesPerSecond;
 
 	@Deprecated //Marker, this constructor should only be used by the serializer

@@ -277,6 +277,7 @@ public class SimpleVideoEditor extends JFrame {
 	 * initialize project
 	 */
 	private void projectLoaded() {
+		project.setUndoSupport(undoSupport);
 		setTitle(project.getFolder().getAbsolutePath());
 		project.setTime(new FrameTime(project.getFramerate()));
 		exportProjectAction.setEnabled(true);
