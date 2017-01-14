@@ -6,6 +6,7 @@
 package org.shaman.sve.model;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -113,7 +114,7 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 	
 	@Override
 	public String toString() {
-		return getName();
+		return new File(getName()).getName();
 	}
 
 	@Override

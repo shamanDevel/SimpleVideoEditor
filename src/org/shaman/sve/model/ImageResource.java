@@ -81,7 +81,7 @@ public class ImageResource implements Resource, Resource.ImageProvider {
 	
 	@Override
 	public String toString() {
-		return getName();
+		return new File(getName()).getName();
 	}
 
 	@Override

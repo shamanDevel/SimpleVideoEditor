@@ -383,7 +383,7 @@ public class ResourcePanel extends javax.swing.JPanel {
 		if (ret == JFileChooser.APPROVE_OPTION) {
 			Settings.set("RESOURCE_VIDEO", fc.getCurrentDirectory().getAbsolutePath());
 			final File videoFile = fc.getSelectedFile();
-			final String baseName = FilenameUtils.getBaseName(videoFile.getName());
+			final String baseName = videoFile.getName();
 			
 			//get start time
 			String startTime = JOptionPane.showInputDialog(this, "Start time", "00:00:00.0");
