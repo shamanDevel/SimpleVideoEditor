@@ -8,9 +8,11 @@ package org.shaman.sve.model;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.beadsproject.beads.data.Sample;
+import org.shaman.sve.LRUCache;
 import org.shaman.sve.player.VideoTools;
 import org.simpleframework.xml.Element;
 
@@ -20,6 +22,44 @@ import org.simpleframework.xml.Element;
  */
 public class VideoResource implements Resource, Resource.ImageProvider {
 	private static final Logger LOG = Logger.getLogger(VideoResource.class.getName());
+	
+	public static class FrameKey {
+		private final VideoResource resource;
+		private final int frame;
+		public FrameKey(VideoResource resource, int frame) {
+			this.resource = resource;
+			this.frame = frame;
+		}
+		@Override
+		public int hashCode() {
+			int hash = 5;
+			hash = 89 * hash + Objects.hashCode(this.resource);
+			hash = 89 * hash + this.frame;
+			return hash;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final FrameKey other = (FrameKey) obj;
+			if (!Objects.equals(this.resource, other.resource)) {
+				return false;
+			}
+			if (this.frame != other.frame) {
+				return false;
+			}
+			return true;
+		}
+	}
+	public static final int MAX_CACHE_SIZE = 1000;
+	/**
+	 * Cache for thumbnails
+	 */
+	public static final LRUCache<FrameKey, BufferedImage> VIDEO_CACHE = new LRUCache<>(MAX_CACHE_SIZE);
 
 	@Element
 	private String name;
@@ -28,10 +68,24 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 
 	private VideoTools videoTools;
 	private Sample audio;
-	private BufferedImage[] thumbnails;
 	private int numFrames;
 	private int duration;
 	private float thumbnailScale;
+	
+	private class FrameLoader implements LRUCache.Factory<FrameKey, BufferedImage> {
+		@Override
+		public BufferedImage create(FrameKey key) {
+			assert (key.resource == VideoResource.this);
+			assert (videoTools != null);
+			try {
+				return videoTools.getThumbnail(key.frame);
+			} catch (IOException ex) {
+				Logger.getLogger(VideoResource.class.getName()).log(Level.SEVERE, "unable to load thumbnail "+key.frame, ex);
+				return null;
+			}
+		}
+	}
+	private final FrameLoader factory = new FrameLoader();
 	
 	public VideoResource() {
 	}
@@ -72,17 +126,12 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 			
 			//2. load thumbnails
 			numFrames = videoTools.getFrameCount();
-			thumbnails = new BufferedImage[numFrames];
-//			for (int i=0; i<numFrames; ++i) {
-			for (int i=0; i<1; ++i) {
-				thumbnails[i] = videoTools.getThumbnail(i);
-				thumbnails[i] = VideoTools.ensureFormat(thumbnails[i], BufferedImage.TYPE_INT_ARGB);
-			}
+			BufferedImage firstThumbnail = VIDEO_CACHE.getCreate(new FrameKey(this, 0), factory);
 			loader.setMessage(name+":\nloaded");
 			
 			//3. get thumbnail scale
 			BufferedImage highRes = getFrame(0, false);
-			thumbnailScale = thumbnails[0].getWidth() / (float) highRes.getWidth();
+			thumbnailScale = firstThumbnail.getWidth() / (float) highRes.getWidth();
 			
 			LOG.log(Level.INFO, "video loaded, audio length: {0}, video length: {1} seconds", 
 					new Object[]{audio.getLength()/1000, numFrames / (float)framerate});
@@ -94,14 +143,13 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 
 	@Override
 	public boolean isLoaded() {
-		return thumbnails != null;
+		return audio != null;
 	}
 
 	@Override
 	public void unload() {
 		audio.clear();
 		audio = null;
-		thumbnails = null;
 	}
 	
 	public int getDurationInMsec() {
@@ -121,7 +169,8 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 	@Override
 	public BufferedImage getFrame(int index, boolean thumbnail) {
 		if (thumbnail) {
-			return thumbnails[Math.min(index, numFrames-1)];
+			FrameKey key = new FrameKey(this, Math.min(index, numFrames-1));
+			return VIDEO_CACHE.getCreate(key, factory);
 		} else {
 			try {
 				return VideoTools.ensureFormat(videoTools.getFullResImage(Math.min(index, numFrames-1)), BufferedImage.TYPE_INT_ARGB);
