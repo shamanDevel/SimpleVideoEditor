@@ -73,7 +73,8 @@ public class VideoResource implements Resource, Resource.ImageProvider {
 			//2. load thumbnails
 			numFrames = videoTools.getFrameCount();
 			thumbnails = new BufferedImage[numFrames];
-			for (int i=0; i<numFrames; ++i) {
+//			for (int i=0; i<numFrames; ++i) {
+			for (int i=0; i<1; ++i) {
 				thumbnails[i] = videoTools.getThumbnail(i);
 				thumbnails[i] = VideoTools.ensureFormat(thumbnails[i], BufferedImage.TYPE_INT_ARGB);
 			}

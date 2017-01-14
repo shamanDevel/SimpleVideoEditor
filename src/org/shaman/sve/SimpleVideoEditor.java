@@ -429,7 +429,7 @@ public class SimpleVideoEditor extends JFrame {
 		sve.setLocationRelativeTo(null);
 		VideoTools.checkFfmpeg(sve);
 		
-		sve.loadProject(new File("C:\\Users\\Sebastian\\Documents\\Java\\SimpleVideoEditorProjects\\Project1"));
+//		sve.loadProject(new File("C:\\Users\\Sebastian\\Documents\\Java\\SimpleVideoEditorProjects\\Project1"));
 	}
 	
 }
