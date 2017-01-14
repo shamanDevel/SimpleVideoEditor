@@ -233,4 +233,29 @@ public class TransparencyImageFilter extends AbstractImageFilter {
 		}
 		
 	}
+	
+	@ServiceProvider(service = FilterFactory.class)
+	public static class FadeOutFactory implements FilterFactory {
+
+		@Override
+		public String getName() {
+			return "Image/Fade Out";
+		}
+
+		@Override
+		public boolean isApplicable(ResourceTimelineObject<Resource> obj) {
+			return (obj instanceof ImageTimelineObject);
+		}
+
+		@Override
+		public TimelineObject createFilter(ResourceTimelineObject<Resource> obj) {
+			int duration = Math.min(1000, obj.getDuration());
+			TransparencyImageFilter filter = new TransparencyImageFilter(obj, 1, 0, false);
+			filter.setDuration(duration);
+			filter.setStart(obj.getDuration() - duration);
+			filter.setName("Fade Out");
+			return filter;
+		}
+		
+	}
 }

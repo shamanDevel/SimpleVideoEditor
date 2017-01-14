@@ -42,14 +42,18 @@ public class Exporter extends SwingWorker<Void, Void> {
 	private final Player player;
 	private final File targetFile;
 	private final Project project;
+	private final FrameTime start;
+	private final FrameTime end;
 	private JDialog dialog;
 	private JLabel message;
 	private JProgressBar progress;
 
-	public Exporter(Player player, File targetFile) {
+	public Exporter(Player player, File targetFile, FrameTime start, FrameTime end) {
 		this.player = player;
 		this.targetFile = targetFile;
 		this.project = player.getProject();
+		this.start = start;
+		this.end = end;
 	}
 	
 	private void createDialog() {
@@ -67,8 +71,8 @@ public class Exporter extends SwingWorker<Void, Void> {
 		dialog.setLocationRelativeTo(null);
 	}
 	
-	public static void exportProject(Player player, File targetFile) {
-		Exporter e = new Exporter(player, targetFile);
+	public static void exportProject(Player player, File targetFile, FrameTime start, FrameTime end) {
+		Exporter e = new Exporter(player, targetFile, start, end);
 		e.createDialog();
 		e.execute();
 		e.dialog.setVisible(true);
@@ -85,6 +89,7 @@ public class Exporter extends SwingWorker<Void, Void> {
 		LOG.info("output folder cleaned");
 		
 		FrameTime ft = new FrameTime(project.getFramerate());
+		final float lengthFrames = end.toFrames() - start.toFrames();
 		
 		//write images
 		setMessage("write frames");
@@ -92,14 +97,15 @@ public class Exporter extends SwingWorker<Void, Void> {
 		setProgress(1, 0);
 		BufferedImage frame = new BufferedImage(project.getWidth(), project.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		int i=1;
-		while (ft.compareTo(project.getLength()) < 0) {
+		ft.set(start);
+		while (ft.compareTo(end) < 0) {
 			player.setTime(ft);
 			Graphics2D g = frame.createGraphics();
 			player.draw(g);
 			g.dispose();
 			ImageIO.write(frame, "png", new File(outputFolder, "frame"+i+".png"));
 			ft.incrementLocal();
-			setProgress(1, i / (float)project.getLength().toFrames());
+			setProgress(1, i / lengthFrames);
 			i++;
 		}
 		LOG.info("frames written");
@@ -109,7 +115,9 @@ public class Exporter extends SwingWorker<Void, Void> {
 		setProgress(2, 0);
 		Sample targetSample = new Sample(project.getLength().toMillis(), 2, 44100);
 		RecordToSample rts = new RecordToSample(player.getAudioContext(), targetSample, RecordToSample.Mode.INFINITE);
-		ft.fromMillis(0);
+		ft.set(start);
+		FrameTime oldLength = project.getLength();
+		project.setLength(end.clone());
 		player.setTime(ft);
 		player.getAudioContext().out.addDependent(rts);
 		rts.addInput(player.getAudioContext().out);
@@ -127,18 +135,21 @@ public class Exporter extends SwingWorker<Void, Void> {
 						}
 						break;
 					case Project.PROP_TIME:
-						setProgress(2, project.getTime().toFrames() / (float)project.getLength().toFrames());
+						setProgress(2, (project.getTime().toFrames() - start.toFrames()) / lengthFrames);
 						break;
 				}
 			}
 		};
 		player.addPropertyChangeListener(pcl);
+		project.addPropertyChangeListener(pcl);
 		player.start(true);
 		synchronized (barrier) {
 			barrier.wait();
 		}
 		player.removePropertyChangeListener(pcl);
+		project.removePropertyChangeListener(pcl);
 		player.getAudioContext().out.removeDependent(rts);
+		project.setLength(oldLength);
 		rts.pause(true);
 		rts.kill();
 		rts.clip();

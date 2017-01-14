@@ -42,6 +42,12 @@ public final class FrameTime implements Comparable<FrameTime>, Cloneable {
 	public FrameTime(int framesPerSecond) {
 		this.framesPerSecond = framesPerSecond;
 	}
+	
+	public void set(FrameTime other) {
+		this.seconds = other.seconds;
+		this.frame =other.frame;
+		this.framesPerSecond = other.framesPerSecond;
+	}
 
 	public int getSeconds() {
 		return seconds;

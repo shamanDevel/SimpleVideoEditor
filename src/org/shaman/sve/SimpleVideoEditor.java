@@ -371,6 +371,7 @@ public class SimpleVideoEditor extends JFrame {
 	}
 	private void exportProject() {
 		LOG.info("export project");
+		//choose file
 		JFileChooser fc = new JFileChooser(Settings.get("EXPORT_FOLDER", Settings.getLastDirectory().getAbsolutePath()));
 		fc.setAcceptAllFileFilterUsed(true);
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -382,7 +383,17 @@ public class SimpleVideoEditor extends JFrame {
 			Settings.set("EXPORT_FOLDER", fc.getCurrentDirectory().getAbsolutePath());
 			File target = fc.getSelectedFile();
 			LOG.log(Level.INFO, "export to {0}", target);
-			player.export(target);
+			
+			//choose time
+			FrameTime start = new FrameTime(project.getFramerate());
+			FrameTime end = new FrameTime(project.getFramerate());
+			boolean ret2 = StartEndDialog.showDialog(this, project, start, end);
+			if (!ret2) {
+				return;
+			}
+			LOG.info("start time: "+start+", end time: "+end);
+			
+			player.export(target, start, end);
 		}
 	}
 	

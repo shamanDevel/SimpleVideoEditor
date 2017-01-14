@@ -200,9 +200,11 @@ public class Player implements PropertyChangeListener {
 	/**
 	 * Exports the project
 	 * @param target the target file
+	 * @param start start time
+	 * @param end end time
 	 */
-	public void export(File target) {
-		Exporter.exportProject(this, target);
+	public void export(File target, FrameTime start, FrameTime end) {
+		Exporter.exportProject(this, target, start, end);
 	}
 
 	@Override
