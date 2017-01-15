@@ -58,12 +58,36 @@ public class PlayerAudioControl {
 		pos = msec - start;
 	}
 	
+	private boolean isMuted() {
+		GainAudioFilter f = null;
+		for (TimelineObject c : timelineObject.getChildren()) {
+			if (c instanceof GainAudioFilter) {
+				if (f == null) {
+					f = (GainAudioFilter) c;
+				} else {
+					return false;
+				}
+			}
+		}
+		if (f == null) {
+			return false;
+		}
+		if (f.getStart() == 0 && f.getDuration() == timelineObject.getDuration()
+				&& f.getStartGain()==0 && f.getEndGain()==0) {
+			LOG.info(timelineObject+" is muted");
+			return true;
+		}
+		return false;
+	}
+	
 	public void start() {
 		if (!timelineObject.isEnabled()) return;
 		start = timelineObject.getStart();
 		if (pos >= 0) {
-			samplePlayer.start(pos);
-			LOG.info("length: "+samplePlayer.getSample().getLength());
+			if (!isMuted()) {
+				samplePlayer.start(pos);
+				LOG.info("length: "+samplePlayer.getSample().getLength());
+			}
 			running = true;
 			LOG.log(Level.INFO, "{0} started", timelineObject);
 		}
@@ -73,7 +97,9 @@ public class PlayerAudioControl {
 		if (!timelineObject.isEnabled()) return;
 		float npos = timeMsec - start;
 		if (npos >= 0 && !running && npos<=sample.getLength()) {
-			samplePlayer.start(npos);
+			if (!isMuted()) {
+				samplePlayer.start(npos);
+			}
 			running = true;
 			LOG.log(Level.INFO, "{0} started", timelineObject);
 		} else if (npos > sample.getLength() && running) {
