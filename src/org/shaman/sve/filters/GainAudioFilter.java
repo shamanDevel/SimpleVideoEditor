@@ -173,6 +173,9 @@ public class GainAudioFilter extends TimelineObject implements CloneableFilter {
 	 * @return the new gain
 	 */
 	public float getGain(float gain, int millis) {
+		if (!isEnabled()) {
+			return gain;
+		}
 		int localTime = parent.getLocalTime(millis);
 		float alpha;
 		if (localTime < start) {

@@ -73,7 +73,8 @@ public class PlayerAudioControl {
 			return false;
 		}
 		if (f.getStart() == 0 && f.getDuration() == timelineObject.getDuration()
-				&& f.getStartGain()==0 && f.getEndGain()==0) {
+				&& f.getStartGain()==0 && f.getEndGain()==0
+				&& f.isEnabled()) {
 			LOG.info(timelineObject+" is muted");
 			return true;
 		}
