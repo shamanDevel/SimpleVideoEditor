@@ -564,7 +564,11 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
     private void removeButtonEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonEvent
         final TimelineObject obj = selections.getSelectedTimelineObject();
 		assert (obj != null);
-		project.removeTimelineObject(obj);
+		if (obj.getParent() == null) {
+			project.removeTimelineObject(obj);
+		} else {
+			obj.getParent().removeChild(obj);
+		}
 		tableModel.fireUpdate();
 		table.clearSelection();
 		LOG.log(Level.INFO, "timeline object {0} removed", obj);
@@ -573,7 +577,11 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 			@Override
 			public void undo() throws CannotUndoException {
 				super.undo();
-				project.addTimelineObject(obj);
+				if (obj.getParent() == null) {
+					project.addTimelineObject(obj);
+				} else {
+					obj.getParent().addChild(obj);
+				}
 				tableModel.fireUpdate();
 				LOG.info("undo: remove timeline object");
 			}
@@ -581,7 +589,11 @@ public class TimelinePanel extends javax.swing.JPanel implements PropertyChangeL
 			@Override
 			public void redo() throws CannotRedoException {
 				super.redo();
-				project.removeTimelineObject(obj);
+				if (obj.getParent() == null) {
+					project.removeTimelineObject(obj);
+				} else {
+					obj.getParent().removeChild(obj);
+				}
 				tableModel.fireUpdate();
 				LOG.info("redo: remove timeline object");
 			}

@@ -235,6 +235,7 @@ public class CropImageFilter extends AbstractImageFilter implements CloneableFil
 	@Override
 	public BufferedImage process(BufferedImage image, FrameTime frameTime, boolean thumbnail, float thumbnailScale) {
 		int localTime = parent.getLocalTime(frameTime.toMillis());
+		localTime = Math.max(0, localTime);
 		if (localTime < start || localTime > start+duration) {
 			return image;
 		}
