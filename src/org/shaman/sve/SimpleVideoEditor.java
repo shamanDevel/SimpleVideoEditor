@@ -267,6 +267,7 @@ public class SimpleVideoEditor extends JFrame {
 		File source = new File(dir, PROJECT_FILE_NAME);
 		try {
 			project = serializer.read(Project.class, source);
+			project.setFolder(dir);
 			projectLoaded();
 			LOG.info("project file loaded");
 		} catch (Exception ex) {

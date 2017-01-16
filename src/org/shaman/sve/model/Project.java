@@ -31,7 +31,6 @@ public class Project {
 	
 	@Element
 	private String name;
-	@Element
 	private File folder;
 	@Element
 	private int framerate;
