@@ -8,12 +8,15 @@ package org.shaman.sve.player;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioFormat;
@@ -85,8 +88,8 @@ public class Exporter extends SwingWorker<Void, Void> {
 		if (!outputFolder.exists()) {
 			outputFolder.mkdir();
 		}
-		FileUtils.cleanDirectory(outputFolder);
-		LOG.info("output folder cleaned");
+//		FileUtils.cleanDirectory(outputFolder);
+//		LOG.info("output folder cleaned");
 		
 		FrameTime ft = new FrameTime(project.getFramerate());
 		final float lengthFrames = end.toFrames() - start.toFrames();
@@ -98,12 +101,24 @@ public class Exporter extends SwingWorker<Void, Void> {
 		BufferedImage frame = new BufferedImage(project.getWidth(), project.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		int i=1;
 		ft.set(start);
+		Map<Object, Object> hints = new HashMap<>();
+		hints.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		hints.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		hints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		while (ft.compareTo(end) < 0) {
-			player.setTime(ft);
-			Graphics2D g = frame.createGraphics();
-			player.draw(g);
-			g.dispose();
-			ImageIO.write(frame, "png", new File(outputFolder, "frame"+i+".png"));
+			File f = new File(outputFolder, "frame"+i+".png");
+			if (f.exists()) {
+				LOG.info(f.getName()+" already exists, skip it");
+			} else {
+				player.setTime(ft);
+				Graphics2D g = frame.createGraphics();
+				g.setRenderingHints(hints);
+				player.draw(g);
+				g.dispose();
+				ImageIO.write(frame, "png", f);
+				LOG.info("frame "+f.getName()+" processed");
+			}
 			ft.incrementLocal();
 			setProgress(1, i / lengthFrames);
 			i++;
@@ -113,49 +128,54 @@ public class Exporter extends SwingWorker<Void, Void> {
 		//write audio
 		setMessage("write audio");
 		setProgress(2, 0);
-		Sample targetSample = new Sample(project.getLength().toMillis(), 2, 44100);
-		RecordToSample rts = new RecordToSample(player.getAudioContext(), targetSample, RecordToSample.Mode.INFINITE);
-		ft.set(start);
-		FrameTime oldLength = project.getLength();
-		project.setLength(end.clone());
-		player.setTime(ft);
-		player.getAudioContext().out.addDependent(rts);
-		rts.addInput(player.getAudioContext().out);
-		final Object barrier = new Object();
-		PropertyChangeListener pcl = new PropertyChangeListener() {
+		File audioFile = new File(outputFolder.getAbsolutePath()+File.separator+"audio.wav");
+		if (audioFile.exists()) {
+			LOG.info("audio file already exists, skip it");
+		} else {
+			Sample targetSample = new Sample(project.getLength().toMillis(), 2, 44100);
+			RecordToSample rts = new RecordToSample(player.getAudioContext(), targetSample, RecordToSample.Mode.INFINITE);
+			ft.set(start);
+			FrameTime oldLength = project.getLength();
+			project.setLength(end.clone());
+			player.setTime(ft);
+			player.getAudioContext().out.addDependent(rts);
+			rts.addInput(player.getAudioContext().out);
+			final Object barrier = new Object();
+			PropertyChangeListener pcl = new PropertyChangeListener() {
 
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				switch (evt.getPropertyName()) {
-					case Player.PROP_PLAYING:
-						if ((boolean) evt.getNewValue() == false) {
-							synchronized(barrier) {
-								barrier.notifyAll();
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					switch (evt.getPropertyName()) {
+						case Player.PROP_PLAYING:
+							if ((boolean) evt.getNewValue() == false) {
+								synchronized(barrier) {
+									barrier.notifyAll();
+								}
 							}
-						}
-						break;
-					case Project.PROP_TIME:
-						setProgress(2, (project.getTime().toFrames() - start.toFrames()) / lengthFrames);
-						break;
+							break;
+						case Project.PROP_TIME:
+							setProgress(2, (project.getTime().toFrames() - start.toFrames()) / lengthFrames);
+							break;
+					}
 				}
+			};
+			player.addPropertyChangeListener(pcl);
+			project.addPropertyChangeListener(pcl);
+			player.start(true);
+			synchronized (barrier) {
+				barrier.wait();
 			}
-		};
-		player.addPropertyChangeListener(pcl);
-		project.addPropertyChangeListener(pcl);
-		player.start(true);
-		synchronized (barrier) {
-			barrier.wait();
+			player.removePropertyChangeListener(pcl);
+			project.removePropertyChangeListener(pcl);
+			player.getAudioContext().out.removeDependent(rts);
+			project.setLength(oldLength);
+			rts.pause(true);
+			rts.kill();
+			rts.clip();
+			targetSample = rts.getSample();
+			SampleAudioFormat af = new SampleAudioFormat(44100.0f, 16, 2, true, true);
+			targetSample.write(audioFile.getAbsolutePath(), AudioFileType.WAV, af);
 		}
-		player.removePropertyChangeListener(pcl);
-		project.removePropertyChangeListener(pcl);
-		player.getAudioContext().out.removeDependent(rts);
-		project.setLength(oldLength);
-		rts.pause(true);
-		rts.kill();
-		rts.clip();
-		targetSample = rts.getSample();
-		SampleAudioFormat af = new SampleAudioFormat(44100.0f, 16, 2, true, true);
-		targetSample.write(outputFolder.getAbsolutePath()+File.separator+"audio.wav", AudioFileType.WAV, af);
 		LOG.info("audio created");
 		
 		//assemble video
