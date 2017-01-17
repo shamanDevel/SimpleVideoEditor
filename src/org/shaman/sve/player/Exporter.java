@@ -188,8 +188,9 @@ public class Exporter extends SwingWorker<Void, Void> {
 			"-i", outputFolder.getAbsolutePath()+File.separator+"frame%d.png",
 			"-i", outputFolder.getAbsolutePath()+File.separator+"audio.wav",
 			"-c:v", "libx264",
+			"-c:a", "libvorbis",
 			"-r", String.valueOf(project.getFramerate()),
-			"-shortest",
+//			"-shortest",
 			targetFile.getAbsolutePath()
 		};
 		ProcessBuilder pb = new ProcessBuilder(args).inheritIO();
