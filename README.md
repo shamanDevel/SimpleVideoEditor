@@ -1,4 +1,8 @@
 # SimpleVideoEditor
+
+**This project was migrated to gitlab: https://gitlab.com/shaman42/SimpleVideoEditor.**
+This repository is no longer active.
+
 A simple video editor written in java
 
 For a compiled version, see the release page.
